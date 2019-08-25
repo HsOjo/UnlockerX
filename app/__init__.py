@@ -60,7 +60,14 @@ class Application(ApplicationBase, ApplicationView):
         self.inject_menu_title()
 
     def lock_now(self):
-        system_api.sleep(True)
+        # system_api.sleep(True)
+        osa_api.screen_save()
+
+    def unlock(self):
+        osa_api.key_stroke('down', constant=True)
+        osa_api.key_stroke('a', modifier='command down')
+        osa_api.key_stroke(self.config.password)
+        osa_api.key_stroke('return', constant=True)
 
     def callback_refresh(self, sender: rumps.Timer):
         try:

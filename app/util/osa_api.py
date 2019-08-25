@@ -129,3 +129,11 @@ def set_login_startup(name, path, hidden=False):
 def screen_save():
     code = '''tell application id "com.apple.ScreenSaver.Engine" to launch'''
     [stat, out, err] = AppleScript.exec(code)
+
+
+def key_stroke(key, constant=False, modifier=None):
+    if modifier is None:
+        modifier = []
+    code = '''tell application "System Events" to keystroke %s using %s''' % (
+    ObjectConvertor.to_object(key, constant), ObjectConvertor.to_object(modifier, constant=True))
+    [stat, out, err] = AppleScript.exec(code)

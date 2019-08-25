@@ -28,6 +28,7 @@ class Chinese(English):
     description_clear_config = '''这将会删除配置文件，确定吗？'''
     description_clear_config_restart = '''配置文件已经被删除，现在重新启动该应用？'''
 
+    menu_lock_now = '立即锁定'
     menu_preferences = '偏好设置'
     menu_advanced_options = '高级选项'
     menu_event_callback = '事件回调'
