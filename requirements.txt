@@ -1,0 +1,4 @@
+requests==2.22.0
+rumps==0.3.0
+PyExecJS==1.5.1
+PyInstaller==3.5
