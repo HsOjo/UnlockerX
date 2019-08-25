@@ -23,6 +23,8 @@ class Application(ApplicationBase, ApplicationView):
         self.is_admin = system_api.check_admin()
         self.is_locked = None  # type: bool
 
+        self.cgsession_info = None  # type: dict
+
     def bind_menu_callback(self):
         # menu_application
         self.set_menu_callback(self.menu_lock_now, callback=lambda _: self.lock_now())
@@ -71,7 +73,8 @@ class Application(ApplicationBase, ApplicationView):
 
     def callback_refresh(self, sender: rumps.Timer):
         try:
-            is_locked = system_api.check_locked()
+            self.cgsession_info = system_api.cgsession_info()
+            is_locked = self.cgsession_info.get('CGSSessionScreenIsLocked', False)
             if is_locked != self.is_locked:
                 self.callback_lock_status_changed(is_locked, self.is_locked)
                 self.is_locked = is_locked
@@ -83,6 +86,7 @@ class Application(ApplicationBase, ApplicationView):
         params = locals()
 
         log.append(self.callback_lock_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
+        print(self.cgsession_info)
 
         self.event_trigger(self.callback_lock_status_changed, params, self.config.event_lock_status_changed)
 
