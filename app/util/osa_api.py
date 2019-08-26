@@ -134,6 +134,9 @@ def screen_save():
 def key_stroke(key, constant=False, modifier=None):
     if modifier is None:
         modifier = []
+    if isinstance(key, int):
+        key = 'key code %s' % key
+        constant = True
     code = '''tell application "System Events" to keystroke %s using %s''' % (
-    ObjectConvertor.to_object(key, constant), ObjectConvertor.to_object(modifier, constant=True))
+        ObjectConvertor.to_object(key, constant), ObjectConvertor.to_object(modifier, constant=True))
     [stat, out, err] = AppleScript.exec(code)

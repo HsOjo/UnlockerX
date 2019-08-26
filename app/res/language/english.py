@@ -7,15 +7,14 @@ class English(Language):
     unknown = 'Unknown Str: (%s)'
     cancel = 'Cancel'
     ok = 'OK'
+    none = 'None'
 
     description_about = '''%s Version %s
 
 Develop by %s.
 Below is the link with the project GitHub page.''' % (Const.app_name, Const.version, Const.author)
-    description_set_password = '''Set the administrator user password.
-It will use for execute change "Power Management Settings". (Disable Lid Sleep)'''
+    description_set_password = '''Set the administrator user password.'''
     description_set_username = '''Set the administrator username. (This username isn't full name! You can query it on "Terminal.app", login your admin user and input "whoami" on terminal.)
-It will use for change "Power Management Settings". (Disable Lid Sleep)
 (If current user is administrator then this is optional. Will use current username if empty.)'''
     description_select_language = 'Select your language.'
     description_crash = '''Oops! Application Crash!
@@ -28,12 +27,21 @@ Event parameter will passing through Environment. (JSON Format, key: %s)
 More information can found on GitHub "doc/" folder. (such as examples.)''' % Const.app_env
     description_clear_config = '''This action will delete config file, Do it now?'''
     description_clear_config_restart = '''Config file is deleted now, Restart this application now?'''
+    description_bind_device = '''Bind Bluetooth device. If your device not in this list, You should pair your device on "System Preferences" - "Bluetooth" first.'''
+    description_set_weak_signal_value = '''Weak signal will trigger weak signal events.
+Unit: dBm, The signal value smaller, the signal weaker.'''
 
+    view_device_name = 'Device Name: %s'
+    view_device_address = 'Device Address: %s'
+    view_device_signal_value = 'Device Signal: %s'
+
+    menu_bind_device = 'Bind Device'
     menu_lock_now = 'Lock Now'
     menu_preferences = 'Preferences'
     menu_advanced_options = 'Advanced Options'
     menu_event_callback = 'Event Callback'
     menu_set_lock_status_changed_event = 'Set Lock Status Changed Event'
+    menu_set_weak_signal_value = 'Set Weak Signal Value'
     menu_set_username = 'Set Admin Username (Not Admin User Need)'
     menu_set_password = 'Set Admin Password'
     menu_select_language = 'Set Language'

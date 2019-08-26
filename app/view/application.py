@@ -7,6 +7,11 @@ class ApplicationView(ViewBase):
     def __init__(self):
         super().__init__()
 
+        self.menu_view_device_name = None  # type: rumps.MenuItem
+        self.menu_view_device_address = None  # type: rumps.MenuItem
+        self.menu_view_device_signal_value = None  # type: rumps.MenuItem
+
+        self.menu_bind_device = None  # type: rumps.MenuItem
         self.menu_lock_now = None  # type: rumps.MenuItem
         self.menu_preferences = None  # type: rumps.MenuItem
         self.menu_select_language = None  # type: rumps.MenuItem
@@ -14,6 +19,7 @@ class ApplicationView(ViewBase):
         self.menu_about = None  # type: rumps.MenuItem
         self.menu_quit = None  # type: rumps.MenuItem
 
+        self.menu_set_weak_signal_value = None  # type: rumps.MenuItem
         self.menu_set_startup = None  # type: rumps.MenuItem
         self.menu_set_username = None  # type: rumps.MenuItem
         self.menu_set_password = None  # type: rumps.MenuItem
@@ -27,6 +33,11 @@ class ApplicationView(ViewBase):
 
     def setup_menus(self):
         # menu_application
+        self.add_menu('view_device_name')
+        self.add_menu('view_device_address')
+        self.add_menu('view_device_signal_value')
+        self.add_menu('-')
+        self.add_menu('bind_device')
         self.add_menu('lock_now')
         self.add_menu('-')
         self.menu_preferences = self.add_menu('preferences', self.lang.menu_preferences)
@@ -39,6 +50,8 @@ class ApplicationView(ViewBase):
         # menu_application end
 
         # menu_preferences
+        self.add_menu('set_weak_signal_value', parent=self.menu_preferences)
+        self.add_menu('-', parent=self.menu_preferences)
         self.add_menu('set_startup', parent=self.menu_preferences)
         self.add_menu('-', parent=self.menu_preferences)
         self.add_menu('set_username', parent=self.menu_preferences)

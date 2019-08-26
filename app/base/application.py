@@ -112,7 +112,7 @@ class ApplicationBase:
 
             if content is not None:
                 if to_int:
-                    if isinstance(content, str) and content.isnumeric():
+                    if isinstance(content, str) and content.replace('-', '', 1).isnumeric():
                         setattr(self.config, key, int(content))
                 else:
                     setattr(self.config, key, content)
@@ -126,6 +126,35 @@ class ApplicationBase:
             return False
 
         return set_input
+
+    def generate_callback_config_select(self, key, description, options, multi=False, empty_state=False):
+        def select(sender: rumps.MenuItem):
+            index = None
+            _options = []
+            if isinstance(options, dict):
+                _options = list(options.keys())
+                index = osa_api.choose_from_list(sender.title, description, _options, multi)
+            elif isinstance(options, list):
+                index = osa_api.choose_from_list(sender.title, description, options, multi)
+
+            if index is not None:
+                content = None
+                if isinstance(options, dict):
+                    content = options[_options[index]]
+                elif isinstance(options, list):
+                    content = options[index]
+
+                setattr(self.config, key, content)
+
+                if empty_state:
+                    sender.state = content != ''
+
+                self.config.save()
+                return True
+
+            return False
+
+        return select
 
     def generate_languages_menu(self, parent):
         g_set_lang = lambda lang: lambda _: self.set_language(lang)
@@ -151,6 +180,8 @@ class ApplicationBase:
     def callback_exception(self):
         exc = common.get_exception()
         log.append(self.callback_exception, 'Error', exc)
+        if 'KeyboardInterrupt' in exc:
+            self.quit()
         if osa_api.alert(self.lang.title_crash, self.lang.description_crash):
             self.export_log()
 
