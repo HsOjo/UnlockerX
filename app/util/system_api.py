@@ -52,3 +52,17 @@ def cgsession_info():
 
 def sleep(display_only=False):
     os.system('/usr/bin/pmset %s' % ('displaysleepnow' if display_only else 'sleepnow'))
+
+
+def check_lid():
+    content = common.execute_get_out('/usr/sbin/ioreg -c IOPMrootDomain -d 4')
+
+    reg = re.compile(r'"AppleClamshellState" = (\S+)')
+    result = common.reg_find_one(reg, content, None)
+
+    if result == 'Yes':
+        return True
+    elif result == 'No':
+        return False
+    else:
+        return None

@@ -1,5 +1,23 @@
 # UnlockerX
 
+Near unlock your Mac by Bluetooth device!
+
+* Multiple language support ! ! !
+  * English
+  * Simple Chinese
+  * Tradtional Chinese
+  * Japanese (By Translater)
+  * Korean (By Translater)
+
+* Events callback execute custom program support !!!
+  * Signal Weak
+  * Connect Status Changed
+  * Lock Status Changed
+
+Base on above contents, You can free to extend this program. (example code on folder "/docs/".)
+
+![Thumbnail](docs/img/thumbnail_en.png)
+
 ## Downloads
 
 Please view [Releases Page](../../releases).

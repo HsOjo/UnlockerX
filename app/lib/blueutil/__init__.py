@@ -44,7 +44,9 @@ class BlueUtil:
             }
 
             if item['is_connected']:
-                item['signal_value'] = int(cols[1][cols[1].find('-'):cols[1].find('dBm')].strip())
+                value_str = cols[1][cols[1].find('-'):cols[1].find('dBm')].strip()
+                if value_str.replace('-', '', 1).isnumeric():
+                    item['signal_value'] = int(value_str)
 
         return item
 

@@ -26,7 +26,7 @@ class Chinese(English):
 有关更多信息，请访问 GitHub 页面下的 “doc/” 目录。（例如使用样例）''' % Const.app_env
     description_clear_config = '''这将会删除配置文件，确定吗？'''
     description_clear_config_restart = '''配置文件已经被删除，现在重新启动该应用？'''
-    description_bind_device = '''绑定蓝牙设备。如果你的设备不在该列表，你应该先到 "系统偏好设置" - "蓝牙" 配对你的设备。'''
+    description_bind_bluetooth_device = '''绑定蓝牙设备。如果你的设备不在该列表，你应该先到 "系统偏好设置" - "蓝牙" 配对你的设备。'''
     description_set_weak_signal_value = '''信号弱将触发弱信号事件。
 单位：dBm，信号值越小，信号越弱。'''
 
@@ -34,12 +34,18 @@ class Chinese(English):
     view_device_address = '设备地址：%s'
     view_device_signal_value = '设备信号：%s'
 
-    menu_bind_device = '绑定设备'
+    menu_bind_bluetooth_device = '绑定蓝牙设备'
     menu_lock_now = '立即锁定'
+    menu_pause_auto_lock = '暂停自动锁定'
+    menu_pause_auto_unlock = '暂停自动解锁'
     menu_preferences = '偏好设置'
     menu_advanced_options = '高级选项'
     menu_event_callback = '事件回调'
     menu_set_lock_status_changed_event = '设置锁定状态改变事件'
+    menu_set_signal_weak_event = '设置设备信号弱事件'
+    menu_set_connect_status_changed_event = '设置设备连接状态改变事件'
+    menu_set_weak_signal_lock_time = '设置设备信号弱锁定时间'
+    menu_set_disconnect_lock_time = '设置设备断开连接锁定时间'
     menu_set_weak_signal_value = '设置弱信号值'
     menu_set_username = '设置管理员用户名 (非管理员用户使用)'
     menu_set_password = '设置管理员用户密码'

@@ -224,7 +224,7 @@ class ApplicationBase:
                     err_str = err_str.replace(v, Const.protector)
 
             if log_str != '':
-                with open('%s/%s' % (folder, '%s.append' % Const.app_name), 'w') as io:
+                with open('%s/%s' % (folder, '%s.log' % Const.app_name), 'w') as io:
                     io.write(log_str)
 
             if err_str != '':

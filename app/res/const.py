@@ -6,5 +6,3 @@ class Const:
     github_page = 'https://github.com/%s/%s' % (author, app_name)
     releases_url = '%s/releases' % github_page
     protector = '[protector]'
-    weak_time = 3
-    reconnect_time = 3

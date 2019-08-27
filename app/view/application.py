@@ -11,8 +11,10 @@ class ApplicationView(ViewBase):
         self.menu_view_device_address = None  # type: rumps.MenuItem
         self.menu_view_device_signal_value = None  # type: rumps.MenuItem
 
-        self.menu_bind_device = None  # type: rumps.MenuItem
+        self.menu_bind_bluetooth_device = None  # type: rumps.MenuItem
         self.menu_lock_now = None  # type: rumps.MenuItem
+        self.menu_pause_auto_lock = None  # type: rumps.MenuItem
+        self.menu_pause_auto_unlock = None  # type: rumps.MenuItem
         self.menu_preferences = None  # type: rumps.MenuItem
         self.menu_select_language = None  # type: rumps.MenuItem
         self.menu_check_update = None  # type: rumps.MenuItem
@@ -20,6 +22,8 @@ class ApplicationView(ViewBase):
         self.menu_quit = None  # type: rumps.MenuItem
 
         self.menu_set_weak_signal_value = None  # type: rumps.MenuItem
+        self.menu_set_weak_signal_lock_time = None  # type: rumps.MenuItem
+        self.menu_set_disconnect_lock_time = None  # type: rumps.MenuItem
         self.menu_set_startup = None  # type: rumps.MenuItem
         self.menu_set_username = None  # type: rumps.MenuItem
         self.menu_set_password = None  # type: rumps.MenuItem
@@ -29,6 +33,8 @@ class ApplicationView(ViewBase):
         self.menu_export_log = None  # type: rumps.MenuItem
         self.menu_clear_config = None  # type: rumps.MenuItem
 
+        self.menu_set_signal_weak_event = None  # type: rumps.MenuItem
+        self.menu_set_connect_status_changed_event = None  # type: rumps.MenuItem
         self.menu_set_lock_status_changed_event = None  # type: rumps.MenuItem
 
     def setup_menus(self):
@@ -37,8 +43,11 @@ class ApplicationView(ViewBase):
         self.add_menu('view_device_address')
         self.add_menu('view_device_signal_value')
         self.add_menu('-')
-        self.add_menu('bind_device')
+        self.add_menu('bind_bluetooth_device')
+        self.add_menu('-')
         self.add_menu('lock_now')
+        self.add_menu('pause_auto_lock')
+        self.add_menu('pause_auto_unlock')
         self.add_menu('-')
         self.menu_preferences = self.add_menu('preferences', self.lang.menu_preferences)
         self.add_menu('select_language')
@@ -51,6 +60,9 @@ class ApplicationView(ViewBase):
 
         # menu_preferences
         self.add_menu('set_weak_signal_value', parent=self.menu_preferences)
+        self.add_menu('-', parent=self.menu_preferences)
+        self.add_menu('set_weak_signal_lock_time', parent=self.menu_preferences)
+        self.add_menu('set_disconnect_lock_time', parent=self.menu_preferences)
         self.add_menu('-', parent=self.menu_preferences)
         self.add_menu('set_startup', parent=self.menu_preferences)
         self.add_menu('-', parent=self.menu_preferences)
@@ -69,5 +81,8 @@ class ApplicationView(ViewBase):
         # menu_advanced_options end
 
         # menu_event_callback
+        self.add_menu('set_signal_weak_event', parent=self.menu_event_callback)
+        self.add_menu('set_connect_status_changed_event', parent=self.menu_event_callback)
+        self.add_menu('-', parent=self.menu_event_callback)
         self.add_menu('set_lock_status_changed_event', parent=self.menu_event_callback)
         # menu_event_callback end
