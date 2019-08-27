@@ -38,7 +38,7 @@ Unit: dBm, The signal value smaller, the signal weaker.'''
     view_device_signal_value = 'Device Signal: %s'
 
     menu_bind_bluetooth_device = 'Bind Bluetooth Device'
-    menu_lock_now = 'Lock Now'
+    menu_lock_now = 'Lock Now (Manual Unlock Need)'
     menu_pause_auto_lock = 'Pause Auto Lock'
     menu_pause_auto_unlock = 'Pause Auto Unlock'
     menu_preferences = 'Preferences'

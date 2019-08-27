@@ -31,8 +31,8 @@ class Application(ApplicationBase, ApplicationView):
         self.lock_time = None  # type: float
         self.lid_stat = None  # type: bool
 
-        self.lock_by_user = True
-        self.unlock_by_user = True
+        self.lock_by_user = False
+        self.unlock_by_user = False
 
         self.pause_auto_lock = False
         self.pause_auto_unlock = False
@@ -138,6 +138,7 @@ class Application(ApplicationBase, ApplicationView):
             osa_api.screen_save()
 
     def lock_delay(self, wait):
+        log.append(self.lock_delay, 'Info', wait)
         with self.t_lock:
             if wait is None:
                 self.lock_time = None
@@ -145,14 +146,16 @@ class Application(ApplicationBase, ApplicationView):
                 self.lock_time = time.time() + wait
 
     def unlock(self):
-        if self.config.password != '':
-            self.unlock_by_user = False
-            osa_api.key_stroke(126)
-            osa_api.key_stroke('a', modifier='command down')
-            osa_api.key_stroke(self.config.password)
-            osa_api.key_stroke('return', constant=True)
-        else:
-            self.message_box(self.lang.info, self.lang.description_need_set_password)
+        log.append(self.unlock, 'Info')
+        if self.is_locked:
+            if self.config.password != '':
+                self.unlock_by_user = False
+                osa_api.key_stroke(126)
+                osa_api.key_stroke('a', modifier='command down')
+                osa_api.key_stroke(self.config.password)
+                osa_api.key_stroke('return', constant=True)
+            else:
+                self.message_box(self.lang.info, self.lang.description_need_set_password)
 
     def callback_refresh(self, sender: rumps.Timer):
         try:
@@ -185,9 +188,9 @@ class Application(ApplicationBase, ApplicationView):
                 if signal_value != signal_value_prev:
                     self.callback_device_signal_value_changed(signal_value, signal_value_prev)
 
-                print(signal_value, self.is_locked, self.lock_by_user, self.lid_stat)
-                if signal_value is not None and signal_value > self.config.weak_signal_value and self.is_locked and not self.lock_by_user and not self.lid_stat:
-                    self.unlock()
+                if self.is_locked and not self.lock_by_user and not self.lid_stat:
+                    if signal_value is not None and signal_value > self.config.weak_signal_value:
+                        self.unlock()
         except:
             sender.stop()
             self.callback_exception()
@@ -204,6 +207,8 @@ class Application(ApplicationBase, ApplicationView):
     def callback_signal_weak(self, status: bool, status_prev: bool = None):
         params = locals()
 
+        self.app.icon = '%s/app/res/%s' % (pyinstaller.get_runtime_dir(), 'icon_weak.png' if status else 'icon.png')
+
         if status:
             self.lock_delay(self.config.weak_signal_lock_time)
         else:
@@ -216,6 +221,9 @@ class Application(ApplicationBase, ApplicationView):
 
     def callback_connect_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
+
+        self.app.icon = '%s/app/res/%s' % (
+            pyinstaller.get_runtime_dir(), 'icon.png' if status else 'icon_disconnect.png')
 
         if status_prev is not None and not status:
             self.lock_delay(self.config.disconnect_lock_time)
@@ -230,8 +238,6 @@ class Application(ApplicationBase, ApplicationView):
     def callback_lid_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
 
-        self.lock_by_user = False
-
         log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
 
         self.event_trigger(self.callback_lid_status_changed, params, self.config.event_lid_status_changed)
@@ -241,13 +247,13 @@ class Application(ApplicationBase, ApplicationView):
 
         if status and not status_prev:
             # lock
-            if self.lid_stat:
-                self.lock_by_user = True
             self.unlock_by_user = True
         elif status_prev and not status:
             # unlock
             if self.unlock_by_user and not self.lock_by_user:
                 self.set_pause_auto_lock(True)
+
+            self.lock_by_user = False
 
         log.append(self.callback_lock_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
 
@@ -260,10 +266,10 @@ class Application(ApplicationBase, ApplicationView):
                 with self.t_lock:
                     lock_time = self.lock_time
 
-                if lock_time is not None and time.time() > lock_time:
-                    signal_value = self.device_info.get('signal_value')
-                    if signal_value is None or signal_value <= self.config.weak_signal_value:
-                        if not self.pause_auto_lock:
+                if not self.pause_auto_lock:
+                    if lock_time is not None and time.time() > lock_time:
+                        signal_value = self.device_info.get('signal_value')
+                        if signal_value is None or signal_value <= self.config.weak_signal_value:
                             self.lock_now()
 
                 if self.config.device_address is not None:

@@ -35,7 +35,7 @@ class Chinese(English):
     view_device_signal_value = '设备信号：%s'
 
     menu_bind_bluetooth_device = '绑定蓝牙设备'
-    menu_lock_now = '立即锁定'
+    menu_lock_now = '立即锁定（需要手动解锁）'
     menu_pause_auto_lock = '暂停自动锁定'
     menu_pause_auto_unlock = '暂停自动解锁'
     menu_preferences = '偏好设置'
