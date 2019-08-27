@@ -53,7 +53,7 @@ Enjoy yourself!''' % Const.app_name
     menu_set_connect_status_changed_event = '设置连接状态改变事件'
     menu_set_weak_signal_lock_delay = '设置信号弱锁定延迟'
     menu_set_disconnect_lock_delay = '设置断开连接锁定延迟'
-    menu_set_weak_signal_value = '设置弱信号值'
+    menu_set_weak_signal_value = '设置信号弱临界值'
     menu_set_password = '设置当前用户密码'
     menu_select_language = '设置语言'
     menu_set_startup = '设置登录启动'

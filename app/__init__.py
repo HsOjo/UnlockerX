@@ -28,7 +28,6 @@ class Application(ApplicationBase, ApplicationView):
 
         self.blue_util = BlueUtil('%s/app/lib/blueutil/blueutil' % pyinstaller.get_runtime_dir())
 
-        self.is_admin = system_api.check_admin()
         self.is_locked = None  # type: bool
         self.is_connected = None  # type: bool
         self.lock_time = None  # type: float
@@ -311,23 +310,19 @@ class Application(ApplicationBase, ApplicationView):
         self.about(True)
         self.select_language()
 
-        if self.is_admin:
-            self.message_box(self.lang.title_welcome, self.lang.description_welcome_need_accessibility)
-            system_api.open_preference('Security', wait=True)
-            self.menu_set_password.callback(self.menu_set_password)
-            self.message_box(self.lang.title_welcome, self.lang.description_welcome_pair_device)
-            system_api.open_preference('Bluetooth', wait=True)
-            self.bind_bluetooth_device(self.menu_bind_bluetooth_device)
-            self.message_box(self.lang.title_welcome, self.lang.description_welcome_end)
+        self.message_box(self.lang.title_welcome, self.lang.description_welcome_need_accessibility)
+        system_api.open_preference('Security', wait=True)
+        self.menu_set_password.callback(self.menu_set_password)
+        self.message_box(self.lang.title_welcome, self.lang.description_welcome_pair_device)
+        system_api.open_preference('Bluetooth', wait=True)
+        self.bind_bluetooth_device(self.menu_bind_bluetooth_device)
+        self.message_box(self.lang.title_welcome, self.lang.description_welcome_end)
 
         super().welcome()
 
     def run(self):
         if self.config.welcome:
             self.welcome()
-
-        if not self.is_admin:
-            self.message_box(self.lang.title_info, self.lang.description_not_admin)
 
         t_refresh = rumps.Timer(self.callback_refresh, 1)
         t_refresh.start()
