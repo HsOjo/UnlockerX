@@ -13,6 +13,7 @@ Near unlock your Mac by Bluetooth device!
   * Signal Weak
   * Connect Status Changed
   * Lock Status Changed
+  * Lid Status Changed
 
 Base on above contents, You can free to extend this program. (example code on folder "/docs/".)
 

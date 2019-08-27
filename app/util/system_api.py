@@ -5,9 +5,16 @@ from app import common
 from app.util import object_convert
 
 
-def open_url(url, new=False):
-    param = ' -n' if new else ''
+def open_url(url, new=False, wait=False, bundle=None):
+    param = ''
+    param += ' -n' if new else ''
+    param += ' -W' if wait else ''
+    param += ' -b %s' % bundle if bundle is not None else ''
     os.system('/usr/bin/open%s "%s"' % (param, url))
+
+
+def open_preference(name, **kwargs):
+    open_url('/System/Library/PreferencePanes/%s.prefPane' % name, bundle='com.apple.systempreferences', **kwargs)
 
 
 def check_admin(username=''):

@@ -39,6 +39,9 @@ shutil.rmtree('./build', ignore_errors=True)
 shutil.rmtree('./dist', ignore_errors=True)
 
 add_data('./app/res/icon.png', './app/res')
+add_data('./app/res/icon_weak_signal.png', './app/res')
+add_data('./app/res/icon_disconnect.png', './app/res')
+add_data('./app/res/icon.png', './app/res')
 add_data('./app/lib/blueutil/blueutil', './app/lib/blueutil')
 
 data_str = ''

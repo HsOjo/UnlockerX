@@ -6,13 +6,13 @@ class Config(ConfigBase):
         'password',
     ]
     welcome = True
-    username = ''
     password = ''
     language = 'en'
     device_address = ''
     weak_signal_value = -60
-    weak_signal_lock_time = 3
-    disconnect_lock_time = 10
+    weak_signal_lock_delay = 3
+    disconnect_lock_delay = 10
+    use_screen_saver_replace_lock = True
 
     event_signal_weak = ''
     event_connect_status_changed = ''

@@ -25,22 +25,6 @@ class ApplicationBase:
 
         self.is_admin = system_api.check_admin()
 
-    def admin_exec(self, command):
-        code = -1
-
-        if self.config.username != '':
-            code, out, err = osa_api.run_as_admin(command, self.config.password, self.config.username,
-                                                  timeout=self.config.process_timeout)
-        else:
-            if self.is_admin:
-                code, out, err = system_api.sudo(command, self.config.password, timeout=self.config.process_timeout)
-                log.append(self.admin_exec, 'Info', {'command': command, 'status': code, 'output': out, 'error': err})
-
-        if code != 0:
-            return False
-
-        return True
-
     def add_menu(self, name, title='', callback=None, parent=None):
         if parent is None:
             parent = self.app.menu

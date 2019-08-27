@@ -14,6 +14,11 @@ def run_as_admin(cmd, pwd, user='', timeout=None):
     return stat, out, err
 
 
+def run_as_admin_apple_script(code: str, pwd, user='', timeout=None):
+    cmd = "/usr/bin/osascript -e '%s'" % code.replace("'", "\\'")
+    return run_as_admin(cmd, pwd, user, timeout)
+
+
 def dialog_input(title, description, default='', hidden=False):
     title = ObjectConvertor.to_object(title)
     description = ObjectConvertor.to_object(description)
@@ -131,7 +136,12 @@ def screen_save():
     [stat, out, err] = AppleScript.exec(code)
 
 
-def key_stroke(key, constant=False, modifier=None):
+def set_require_password_wake():
+    code = '''tell application "System Events" to set require password to wake of security preferences to true'''
+    [stat, out, err] = AppleScript.exec(code)
+
+
+def key_stroke(key, constant=False, modifier=None, admin: dict = None):
     if modifier is None:
         modifier = []
     if isinstance(key, int):
@@ -139,4 +149,7 @@ def key_stroke(key, constant=False, modifier=None):
         constant = True
     code = '''tell application "System Events" to keystroke %s using %s''' % (
         ObjectConvertor.to_object(key, constant), ObjectConvertor.to_object(modifier, constant=True))
-    [stat, out, err] = AppleScript.exec(code)
+    if admin is None:
+        [stat, out, err] = AppleScript.exec(code)
+    else:
+        run_as_admin_apple_script(code, admin.get('password'), admin.get('username'))
