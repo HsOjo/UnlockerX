@@ -371,7 +371,7 @@ class Application(ApplicationBase, ApplicationView):
 
     def check_accessibility(self, welcome=False):
         [stat, _, err] = osa_api.key_stroke('key code 105', constant=True)
-        if stat != 0:
+        if stat == 1 and '1002' in err:
             self.message_box(self.lang.title_welcome if welcome else self.lang.title_info,
                              self.lang.description_need_accessibility)
             system_api.open_preference('Security', wait=True)
