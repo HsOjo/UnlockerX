@@ -19,6 +19,12 @@ Base on above contents, You can free to extend this program. (example code on fo
 
 ![Thumbnail](docs/img/thumbnail_en.png)
 
+## If Unlock Failed (Update Application)
+
+You need to reactivation control permission.
+
+Open "System Preferences" - "Security" - "Privacy" - "Accessibility", Re-check "UnlockerX".
+
 ## Downloads
 
 Please view [Releases Page](../../releases).

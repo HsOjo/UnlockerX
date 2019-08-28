@@ -19,6 +19,12 @@
 
 ![Thumbnail](docs/img/thumbnail_cn.png)
 
+## 如果解锁失败（更新应用）
+
+你需要重新激活控制权限。
+
+打开 "系统偏好设置" - "安全性与隐私" - "隐私" - "辅助功能", 重新勾选 "UnlockerX"。
+
 ## 下载
 
 请查看[Releases页面](../../releases)。
