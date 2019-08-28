@@ -73,3 +73,12 @@ def check_lid():
         return False
     else:
         return None
+
+
+def get_hid_idle_time():
+    content = common.execute_get_out('/usr/sbin/ioreg -c IOHIDSystem -d 4')
+
+    reg = re.compile(r'"HIDIdleTime" = (\d+)')
+    result = common.reg_find_one(reg, content, None)
+
+    return int(result) / 1000000000

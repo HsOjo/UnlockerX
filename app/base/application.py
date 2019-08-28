@@ -1,5 +1,6 @@
 import os
 import sys
+import threading
 
 import rumps
 
@@ -310,8 +311,11 @@ class ApplicationBase:
             for k in params_pop:
                 params.pop(k)
 
-            [stat, out, err] = common.execute(
-                path_event, env={Const.app_env: object_convert.to_json(params)}, sys_env=False,
-                timeout=self.config.process_timeout)
-            log.append(source, 'Event',
-                       {'path': path_event, 'status': stat, 'output': out, 'error': err})
+            def t_event_execute():
+                [stat, out, err] = common.execute(
+                    path_event, env={Const.app_env: object_convert.to_json(params)}, sys_env=False,
+                    timeout=self.config.process_timeout)
+                log.append(source, 'Event',
+                           {'path': path_event, 'status': stat, 'output': out, 'error': err})
+
+            threading.Thread(target=t_event_execute).start()

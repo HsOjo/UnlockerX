@@ -30,9 +30,15 @@ class Application(ApplicationBase, ApplicationView):
 
         self.is_locked = None  # type: bool
         self.is_connected = None  # type: bool
+
         self.lock_time = None  # type: float
+        self.idle_time = None  # type: float
         self.lid_stat = None  # type: bool
         self.signal_value = None  # type: int
+
+        self.is_sleep_wake = False
+        self.is_lid_wake = False
+        self.is_idle_wake = False
 
         self.lock_by_user = False
         self.unlock_by_user = False
@@ -161,18 +167,23 @@ class Application(ApplicationBase, ApplicationView):
                 self.lock_time = time.time() + wait
 
     def unlock(self):
-        log.append(self.unlock, 'Info')
         self.refresh_cg_session_info()
         if self.is_locked:
             if self.config.password != '':
                 self.unlock_by_user = False
-                osa_api.key_stroke(126)
                 osa_api.key_stroke('a', modifier='command down')
                 osa_api.key_stroke(self.config.password)
                 osa_api.key_stroke('return', constant=True)
             elif self.hint_set_password:
                 self.hint_set_password = False
                 rumps.notification(self.lang.title_info, '', self.lang.noti_password_need)
+
+        log.append(self.unlock, 'Info', dict(
+            is_locked=self.is_locked,
+            is_sleep_wake=self.is_sleep_wake,
+            is_lid_wake=self.is_lid_wake,
+            is_idle_wake=self.is_idle_wake,
+        ))
 
     def refresh_cg_session_info(self):
         self.cg_session_info = system_api.cgsession_info()
@@ -187,11 +198,19 @@ class Application(ApplicationBase, ApplicationView):
             self.refresh_device_info()
             self.refresh_cg_session_info()
 
+            # check lid
             lid_stat_prev = self.lid_stat
             lid_stat = system_api.check_lid()
             if lid_stat != lid_stat_prev:
                 self.lid_stat = lid_stat
                 self.callback_lid_status_changed(lid_stat, lid_stat_prev)
+
+            # get idle time
+            idle_time_prev = self.idle_time
+            idle_time = system_api.get_hid_idle_time()
+            if idle_time != idle_time_prev:
+                self.idle_time = idle_time
+                self.callback_idle_time_changed(idle_time, idle_time_prev)
 
             if self.config.device_address is not None:
                 device_info_prev = self.device_info
@@ -211,14 +230,24 @@ class Application(ApplicationBase, ApplicationView):
 
                 if self.is_locked and not self.lock_by_user and not self.lid_stat:
                     if signal_value is not None and signal_value > self.config.weak_signal_value:
-                        if self.unlock_count < 3:
+                        if self.unlock_count < 3 and (self.is_lid_wake or self.is_sleep_wake or self.is_idle_wake):
                             self.unlock()
+                            self.unlock_count += 1
                         elif self.unlock_count == 3 and self.hint_set_password:
                             rumps.notification(self.lang.title_info, '', self.lang.noti_unlock_error)
-                        self.unlock_count += 1
         except:
             sender.stop()
             self.callback_exception()
+
+    def callback_idle_time_changed(self, idle_time: float, idle_time_prev: float = None):
+        if idle_time_prev is not None:
+            if idle_time < idle_time_prev:
+                if idle_time_prev >= Const.idle_time:
+                    # idle reset
+                    self.unlock_count = 0
+
+        if idle_time < Const.idle_time_short:
+            self.is_idle_wake = True
 
     def callback_signal_value_changed(self, signal_value: int, signal_value_prev: int = None):
         if signal_value is not None:
@@ -243,8 +272,8 @@ class Application(ApplicationBase, ApplicationView):
         else:
             self.lock_delay(None)
 
-        log.append(self.callback_signal_weak, 'Info', 'from "%s" to "%s"' % (status_prev, status),
-                   self.device_info)
+        log.append(self.callback_signal_weak, 'Info',
+                   'from "%s" to "%s", signal value: %s' % (status_prev, status, self.signal_value))
 
         self.event_trigger(self.callback_signal_weak, params, self.config.event_signal_weak)
 
@@ -264,6 +293,8 @@ class Application(ApplicationBase, ApplicationView):
     def callback_lid_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
 
+        if status and not status_prev:
+            self.is_lid_wake = True
         log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
 
         self.event_trigger(self.callback_lid_status_changed, params, self.config.event_lid_status_changed)
@@ -278,6 +309,9 @@ class Application(ApplicationBase, ApplicationView):
             # unlock
             if self.unlock_by_user and not self.lock_by_user and self.config.password != '':
                 self.set_disable_leave_lock(True)
+                self.is_sleep_wake = False
+                self.is_lid_wake = False
+                self.is_idle_wake = False
 
             self.lock_by_user = False
             self.hint_set_password = True
@@ -289,8 +323,14 @@ class Application(ApplicationBase, ApplicationView):
 
     def thread_monitor(self):
         while True:
+            last_time = time.time()
             time.sleep(0.5)
             try:
+                # check sleep
+                if time.time() - last_time > 1:
+                    self.is_sleep_wake = True
+
+                # get lock time
                 with self.t_lock:
                     lock_time = self.lock_time
 

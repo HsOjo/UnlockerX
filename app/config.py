@@ -10,7 +10,7 @@ class Config(ConfigBase):
     language = 'en'
     device_address = ''
     weak_signal_value = -60
-    weak_signal_lock_delay = 3
+    weak_signal_lock_delay = 5
     disconnect_lock_delay = 10
     use_screen_saver_replace_lock = True
 
