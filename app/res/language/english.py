@@ -78,4 +78,4 @@ Enjoy yourself!''' % Const.app_name
     noti_network_error = 'The network maybe have some problem, please retry later.'
 
     noti_password_need = 'Unlock failed! Need set password.'
-    noti_unlock_error = 'Unlock failed! Operation invalid.'
+    noti_unlock_error = 'Unlock failed! Operation invalid. Please check "Accessibility Settings".'

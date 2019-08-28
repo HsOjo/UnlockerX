@@ -74,4 +74,4 @@ Enjoy yourself!''' % Const.app_name
 
     title_info = '信息'
     noti_password_need = '解锁失败！需要设置密码。'
-    noti_unlock_error = '解锁失败！操作无效。'
+    noti_unlock_error = '解锁失败！操作无效。请检查"辅助功能设置"。'

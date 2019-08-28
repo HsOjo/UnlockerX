@@ -133,12 +133,12 @@ def set_login_startup(name, path, hidden=False):
 
 def screen_save():
     code = '''tell application id "com.apple.ScreenSaver.Engine" to launch'''
-    [stat, out, err] = AppleScript.exec(code)
+    return AppleScript.exec(code)
 
 
 def set_require_password_wake():
     code = '''tell application "System Events" to set require password to wake of security preferences to true'''
-    [stat, out, err] = AppleScript.exec(code)
+    return AppleScript.exec(code)
 
 
 def key_stroke(key, constant=False, modifier=None, admin: dict = None):
@@ -150,6 +150,6 @@ def key_stroke(key, constant=False, modifier=None, admin: dict = None):
     code = '''tell application "System Events" to keystroke %s using %s''' % (
         ObjectConvertor.to_object(key, constant), ObjectConvertor.to_object(modifier, constant=True))
     if admin is None:
-        [stat, out, err] = AppleScript.exec(code)
+        return AppleScript.exec(code)
     else:
-        run_as_admin_apple_script(code, admin.get('password'), admin.get('username'))
+        return run_as_admin_apple_script(code, admin.get('password'), admin.get('username'))

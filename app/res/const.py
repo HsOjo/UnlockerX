@@ -8,3 +8,4 @@ class Const:
     protector = '[protector]'
     idle_time = 30
     idle_time_short = 3
+    unlock_count_limit = 2

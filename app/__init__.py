@@ -164,14 +164,26 @@ class Application(ApplicationBase, ApplicationView):
                 self.lock_time = time.time() + wait
 
     def unlock(self):
-        self.refresh_cg_session_info()
-        log.append(self.unlock, 'Info')
+        log.append(self.unlock, 'Info', dict(unlock_count=self.unlock_count))
+
         if self.is_locked:
             if self.config.password != '':
-                self.unlock_by_user = False
-                osa_api.key_stroke('a', modifier='command down')
-                osa_api.key_stroke(self.config.password)
-                osa_api.key_stroke('return', constant=True)
+                if self.unlock_count < Const.unlock_count_limit:
+                    self.unlock_by_user = False
+                    keys = [
+                        dict(key='a', modifier='command down'),
+                        dict(key=self.config.password),
+                        dict(key='return', constant=True),
+                    ]
+
+                    for key in keys:
+                        [stat, _, _] = osa_api.key_stroke(**key)
+                        if stat != 0:
+                            break
+                elif self.unlock_count == Const.unlock_count_limit:
+                    rumps.notification(self.lang.title_info, '', self.lang.noti_unlock_error)
+
+                self.unlock_count += 1
             elif self.hint_set_password:
                 self.hint_set_password = False
                 rumps.notification(self.lang.title_info, '', self.lang.noti_password_need)
@@ -221,15 +233,11 @@ class Application(ApplicationBase, ApplicationView):
                     self.signal_value = signal_value
                     self.callback_signal_value_changed(signal_value, signal_value_prev)
 
-                if not self.disable_near_unlock:
+                if not self.disable_near_unlock and self.unlock_count <= Const.unlock_count_limit:
                     is_wake = self.is_lid_wake or self.is_sleep_wake or self.is_idle_wake
                     if self.is_locked and (not self.lock_by_user or is_wake) and not self.lid_stat:
                         if signal_value is not None and signal_value > self.config.weak_signal_value:
-                            if self.unlock_count < 3:
-                                self.unlock()
-                                self.unlock_count += 1
-                            elif self.unlock_count == 3 and self.hint_set_password:
-                                rumps.notification(self.lang.title_info, '', self.lang.noti_unlock_error)
+                            self.unlock()
         except:
             self.callback_exception()
 
