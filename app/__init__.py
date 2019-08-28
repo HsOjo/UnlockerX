@@ -225,13 +225,14 @@ class Application(ApplicationBase, ApplicationView):
                     self.signal_value = signal_value
                     self.callback_signal_value_changed(signal_value, signal_value_prev)
 
-                if self.is_locked and not self.lock_by_user and not self.lid_stat:
-                    if signal_value is not None and signal_value > self.config.weak_signal_value:
-                        if self.unlock_count < 3 and (self.is_lid_wake or self.is_sleep_wake or self.is_idle_wake):
-                            self.unlock()
-                            self.unlock_count += 1
-                        elif self.unlock_count == 3 and self.hint_set_password:
-                            rumps.notification(self.lang.title_info, '', self.lang.noti_unlock_error)
+                if not self.disable_near_unlock:
+                    if self.is_locked and not self.lock_by_user and not self.lid_stat:
+                        if signal_value is not None and signal_value > self.config.weak_signal_value:
+                            if self.unlock_count < 3 and (self.is_lid_wake or self.is_sleep_wake or self.is_idle_wake):
+                                self.unlock()
+                                self.unlock_count += 1
+                            elif self.unlock_count == 3 and self.hint_set_password:
+                                rumps.notification(self.lang.title_info, '', self.lang.noti_unlock_error)
         except:
             self.callback_exception()
 
