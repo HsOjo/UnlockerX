@@ -21,12 +21,6 @@ This program can work normally in macOS 10.14. (Tested on MacBook Pro 2019)
 
 ![Thumbnail](docs/img/thumbnail_en.png)
 
-## If Unlock Failed (Update Application)
-
-You need to reactivation control permission.
-
-Open "System Preferences" - "Security" - "Privacy" - "Accessibility", Re-check "UnlockerX".
-
 ## Downloads
 
 Please view [Releases Page](../../releases).

@@ -33,7 +33,7 @@ More information can found on GitHub "doc/" folder. (such as examples.)''' % Con
 Unit: dBm, The signal value smaller, the signal weaker.'''
     description_set_weak_signal_lock_delay = '''On device weak signal, lock screen delay time.'''
     description_set_disconnect_lock_delay = '''On device disconnect, lock screen delay time.'''
-    description_welcome_need_accessibility = '''%s need permissions to unlock your mac.
+    description_need_accessibility = '''%s need permissions to unlock your mac.
 You need click "Privacy" - "Accessibility" on the next window, And add "%s" to the control list.''' % (
         Const.app_name, Const.app_name)
     description_welcome_pair_device = '''Before bind bluetooth device, You need to pair your bluetooth device on next window.'''

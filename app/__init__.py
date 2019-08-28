@@ -166,6 +166,7 @@ class Application(ApplicationBase, ApplicationView):
     def unlock(self):
         log.append(self.unlock, 'Info', dict(unlock_count=self.unlock_count))
 
+        result = False
         if self.is_locked:
             if self.config.password != '':
                 if self.unlock_count < Const.unlock_count_limit:
@@ -176,9 +177,11 @@ class Application(ApplicationBase, ApplicationView):
                         dict(key='return', constant=True),
                     ]
 
+                    result = True
                     for key in keys:
                         [stat, _, _] = osa_api.key_stroke(**key)
                         if stat != 0:
+                            result = False
                             break
                 elif self.unlock_count == Const.unlock_count_limit:
                     rumps.notification(self.lang.title_info, '', self.lang.noti_unlock_error)
@@ -187,6 +190,8 @@ class Application(ApplicationBase, ApplicationView):
             elif self.hint_set_password:
                 self.hint_set_password = False
                 rumps.notification(self.lang.title_info, '', self.lang.noti_password_need)
+
+        return result
 
     def refresh_cg_session_info(self):
         self.cg_session_info = system_api.cg_session_info()
@@ -233,11 +238,16 @@ class Application(ApplicationBase, ApplicationView):
                     self.signal_value = signal_value
                     self.callback_signal_value_changed(signal_value, signal_value_prev)
 
-                if not self.disable_near_unlock and self.unlock_count <= Const.unlock_count_limit:
-                    is_wake = self.is_lid_wake or self.is_sleep_wake or self.is_idle_wake
-                    if self.is_locked and (not self.lock_by_user or is_wake) and not self.lid_stat:
-                        if signal_value is not None and signal_value > self.config.weak_signal_value:
+                if not self.disable_near_unlock and self.is_locked and not self.lid_stat:
+                    if signal_value is not None and signal_value > self.config.weak_signal_value:
+                        is_wake = self.is_lid_wake or self.is_sleep_wake or self.is_idle_wake
+                        if self.unlock_count > Const.unlock_count_limit:
+                            self.unlock_count = 0
+
+                        if is_wake or (not self.lock_by_user and self.unlock_count <= Const.unlock_count_limit):
                             self.unlock()
+                            if self.unlock_count > Const.unlock_count_limit:
+                                self.reset_wake()
         except:
             self.callback_exception()
 
@@ -321,15 +331,18 @@ class Application(ApplicationBase, ApplicationView):
             if self.unlock_by_user and not self.lock_by_user and self.config.password != '':
                 if not self.disable_near_unlock:
                     self.set_disable_leave_lock(True)
-                self.is_sleep_wake = False
-                self.is_lid_wake = False
-                self.is_idle_wake = False
 
+            self.reset_wake()
             self.lock_by_user = False
             self.hint_set_password = True
             self.unlock_count = 0
 
         self.event_trigger(self.callback_lock_status_changed, params, self.config.event_lock_status_changed)
+
+    def reset_wake(self):
+        self.is_sleep_wake = False
+        self.is_lid_wake = False
+        self.is_idle_wake = False
 
     def thread_monitor(self):
         while True:
@@ -356,12 +369,18 @@ class Application(ApplicationBase, ApplicationView):
                 self.callback_exception()
                 break
 
+    def check_accessibility(self, welcome=False):
+        [stat, _, err] = osa_api.key_stroke('key code 105', constant=True)
+        if stat != 0:
+            self.message_box(self.lang.title_welcome if welcome else self.lang.title_info,
+                             self.lang.description_need_accessibility)
+            system_api.open_preference('Security', wait=True)
+
     def welcome(self):
         self.about(True)
         self.select_language()
 
-        self.message_box(self.lang.title_welcome, self.lang.description_welcome_need_accessibility)
-        system_api.open_preference('Security', wait=True)
+        self.check_accessibility(True)
         self.menu_set_password.callback(self.menu_set_password)
         self.message_box(self.lang.title_welcome, self.lang.description_welcome_pair_device)
         system_api.open_preference('Bluetooth', wait=True)
@@ -373,6 +392,8 @@ class Application(ApplicationBase, ApplicationView):
     def run(self):
         if self.config.welcome:
             self.welcome()
+        else:
+            self.check_accessibility()
 
         threading.Thread(target=self.thread_monitor).start()
 
