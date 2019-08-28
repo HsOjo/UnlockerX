@@ -51,9 +51,7 @@ class Application(ApplicationBase, ApplicationView):
         self.cg_session_info = {}
         self.device_info = {}
 
-        self.t_monitor = threading.Thread(target=self.thread_monitor)
         self.t_lock = threading.Lock()
-
         self.unlock_count = 0
 
     def bind_menu_callback(self):
@@ -193,9 +191,8 @@ class Application(ApplicationBase, ApplicationView):
             self.is_locked = is_locked
             self.callback_lock_status_changed(is_locked, is_locked_prev)
 
-    def callback_refresh(self, sender: rumps.Timer):
+    def callback_refresh(self):
         try:
-            self.refresh_device_info()
             self.refresh_cg_session_info()
 
             # check lid
@@ -236,7 +233,6 @@ class Application(ApplicationBase, ApplicationView):
                         elif self.unlock_count == 3 and self.hint_set_password:
                             rumps.notification(self.lang.title_info, '', self.lang.noti_unlock_error)
         except:
-            sender.stop()
             self.callback_exception()
 
     def callback_idle_time_changed(self, idle_time: float, idle_time_prev: float = None):
@@ -364,8 +360,14 @@ class Application(ApplicationBase, ApplicationView):
         if self.config.welcome:
             self.welcome()
 
-        t_refresh = rumps.Timer(self.callback_refresh, 1)
-        t_refresh.start()
+        threading.Thread(target=self.thread_monitor).start()
 
-        self.t_monitor.start()
+        def t_refresh():
+            while True:
+                self.callback_refresh()
+                time.sleep(1)
+
+        threading.Thread(target=t_refresh).start()
+        rumps.Timer(lambda _: self.refresh_device_info(), 1).start()
+
         super().run()
