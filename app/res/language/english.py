@@ -45,7 +45,6 @@ Enjoy yourself!''' % Const.app_name
     view_device_signal_value = 'Device Signal: %s'
 
     menu_bind_bluetooth_device = 'Bind Bluetooth Device'
-    menu_lock_now = 'Lock Now (Manual Unlock Need)'
     menu_disable_leave_lock = 'Disable Leave Lock'
     menu_disable_near_unlock = 'Disable Near Unlock'
     menu_preferences = 'Preferences'

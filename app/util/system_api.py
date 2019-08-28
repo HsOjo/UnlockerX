@@ -50,7 +50,7 @@ def get_system_version():
     return result
 
 
-def cgsession_info():
+def cg_session_info():
     code = 'import Quartz, json; print(json.dumps(dict(Quartz.CGSessionCopyCurrentDictionary())));'
     [stat, out, err] = common.execute('/usr/bin/python', code)
     content = object_convert.from_json(out)  # type: dict

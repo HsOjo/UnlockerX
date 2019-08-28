@@ -41,7 +41,6 @@ Enjoy yourself!''' % Const.app_name
     view_device_signal_value = '设备信号：%s'
 
     menu_bind_bluetooth_device = '绑定蓝牙设备'
-    menu_lock_now = '立即锁定（需要手动解锁）'
     menu_disable_leave_lock = '禁用离开锁定'
     menu_disable_near_unlock = '禁用靠近解锁'
     menu_preferences = '偏好设置'

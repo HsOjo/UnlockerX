@@ -12,7 +12,6 @@ class ApplicationView(ViewBase):
         self.menu_view_device_signal_value = None  # type: rumps.MenuItem
 
         self.menu_bind_bluetooth_device = None  # type: rumps.MenuItem
-        self.menu_lock_now = None  # type: rumps.MenuItem
         self.menu_disable_leave_lock = None  # type: rumps.MenuItem
         self.menu_disable_near_unlock = None  # type: rumps.MenuItem
         self.menu_preferences = None  # type: rumps.MenuItem
@@ -45,7 +44,6 @@ class ApplicationView(ViewBase):
         self.add_menu('view_device_signal_value')
         self.add_menu('-')
         self.add_menu('bind_bluetooth_device')
-        self.add_menu('lock_now')
         self.add_menu('-')
         self.add_menu('disable_leave_lock')
         self.add_menu('disable_near_unlock')

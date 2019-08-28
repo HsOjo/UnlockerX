@@ -57,7 +57,6 @@ class Application(ApplicationBase, ApplicationView):
     def bind_menu_callback(self):
         # menu_application
         self.set_menu_callback(self.menu_bind_bluetooth_device, callback=self.bind_bluetooth_device)
-        self.set_menu_callback(self.menu_lock_now, callback=lambda _: self.lock_now(True))
         self.set_menu_callback(self.menu_disable_leave_lock,
                                callback=lambda sender: self.set_disable_leave_lock(not sender.state))
         self.set_menu_callback(self.menu_disable_near_unlock,
@@ -166,6 +165,7 @@ class Application(ApplicationBase, ApplicationView):
 
     def unlock(self):
         self.refresh_cg_session_info()
+        log.append(self.unlock, 'Info')
         if self.is_locked:
             if self.config.password != '':
                 self.unlock_by_user = False
@@ -176,25 +176,19 @@ class Application(ApplicationBase, ApplicationView):
                 self.hint_set_password = False
                 rumps.notification(self.lang.title_info, '', self.lang.noti_password_need)
 
-        log.append(self.unlock, 'Info', dict(
-            is_locked=self.is_locked,
-            is_sleep_wake=self.is_sleep_wake,
-            is_lid_wake=self.is_lid_wake,
-            is_idle_wake=self.is_idle_wake,
-        ))
-
     def refresh_cg_session_info(self):
-        self.cg_session_info = system_api.cgsession_info()
+        self.cg_session_info = system_api.cg_session_info()
         is_locked_prev = self.is_locked
-        is_locked = self.cg_session_info.get('CGSSessionScreenIsLocked', False)
+        if self.cg_session_info is None:
+            is_locked = False
+        else:
+            is_locked = self.cg_session_info.get('CGSSessionScreenIsLocked', False)
         if is_locked != is_locked_prev:
             self.is_locked = is_locked
             self.callback_lock_status_changed(is_locked, is_locked_prev)
 
     def callback_refresh(self):
         try:
-            self.refresh_cg_session_info()
-
             # check lid
             lid_stat_prev = self.lid_stat
             lid_stat = system_api.check_lid()
@@ -208,6 +202,8 @@ class Application(ApplicationBase, ApplicationView):
             if idle_time != idle_time_prev:
                 self.idle_time = idle_time
                 self.callback_idle_time_changed(idle_time, idle_time_prev)
+
+            self.refresh_cg_session_info()
 
             if self.config.device_address is not None:
                 device_info_prev = self.device_info
@@ -226,9 +222,10 @@ class Application(ApplicationBase, ApplicationView):
                     self.callback_signal_value_changed(signal_value, signal_value_prev)
 
                 if not self.disable_near_unlock:
-                    if self.is_locked and not self.lock_by_user and not self.lid_stat:
+                    is_wake = self.is_lid_wake or self.is_sleep_wake or self.is_idle_wake
+                    if self.is_locked and (not self.lock_by_user or is_wake) and not self.lid_stat:
                         if signal_value is not None and signal_value > self.config.weak_signal_value:
-                            if self.unlock_count < 3 and (self.is_lid_wake or self.is_sleep_wake or self.is_idle_wake):
+                            if self.unlock_count < 3:
                                 self.unlock()
                                 self.unlock_count += 1
                             elif self.unlock_count == 3 and self.hint_set_password:
@@ -242,9 +239,7 @@ class Application(ApplicationBase, ApplicationView):
                 if idle_time_prev >= Const.idle_time:
                     # idle reset
                     self.unlock_count = 0
-
-        if idle_time < Const.idle_time_short:
-            self.is_idle_wake = True
+                    self.is_idle_wake = True
 
     def callback_signal_value_changed(self, signal_value: int, signal_value_prev: int = None):
         if signal_value is not None:
@@ -261,6 +256,9 @@ class Application(ApplicationBase, ApplicationView):
     def callback_signal_weak(self, status: bool, status_prev: bool = None):
         params = locals()
 
+        log.append(self.callback_signal_weak, 'Info',
+                   'from "%s" to "%s", signal value: %s' % (status_prev, status, self.signal_value))
+
         self.app.icon = '%s/app/res/%s' % (
             pyinstaller.get_runtime_dir(), 'icon_weak_signal.png' if status else 'icon.png')
 
@@ -269,13 +267,12 @@ class Application(ApplicationBase, ApplicationView):
         else:
             self.lock_delay(None)
 
-        log.append(self.callback_signal_weak, 'Info',
-                   'from "%s" to "%s", signal value: %s' % (status_prev, status, self.signal_value))
-
         self.event_trigger(self.callback_signal_weak, params, self.config.event_signal_weak)
 
     def callback_connect_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
+
+        log.append(self.callback_connect_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
 
         self.app.icon = '%s/app/res/%s' % (
             pyinstaller.get_runtime_dir(), 'icon.png' if status else 'icon_disconnect.png')
@@ -283,29 +280,39 @@ class Application(ApplicationBase, ApplicationView):
         if status_prev is not None and not status:
             self.lock_delay(self.config.disconnect_lock_delay)
 
-        log.append(self.callback_connect_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
-
         self.event_trigger(self.callback_connect_status_changed, params, self.config.event_connect_status_changed)
 
     def callback_lid_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
 
+        log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         if status and not status_prev:
             self.is_lid_wake = True
-        log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
 
         self.event_trigger(self.callback_lid_status_changed, params, self.config.event_lid_status_changed)
 
     def callback_lock_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
 
+        log.append(self.callback_lock_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status), dict(
+            lock_by_user=self.lock_by_user,
+            unlock_by_user=self.unlock_by_user,
+            is_locked=self.is_locked,
+            is_sleep_wake=self.is_sleep_wake,
+            is_lid_wake=self.is_lid_wake,
+            is_idle_wake=self.is_idle_wake
+        ))
+
         if status and not status_prev:
             # lock
             self.unlock_by_user = True
+            if self.idle_time < Const.idle_time_short:
+                self.lock_by_user = True
         elif status_prev and not status:
             # unlock
             if self.unlock_by_user and not self.lock_by_user and self.config.password != '':
-                self.set_disable_leave_lock(True)
+                if not self.disable_near_unlock:
+                    self.set_disable_leave_lock(True)
                 self.is_sleep_wake = False
                 self.is_lid_wake = False
                 self.is_idle_wake = False
@@ -313,8 +320,6 @@ class Application(ApplicationBase, ApplicationView):
             self.lock_by_user = False
             self.hint_set_password = True
             self.unlock_count = 0
-
-        log.append(self.callback_lock_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
 
         self.event_trigger(self.callback_lock_status_changed, params, self.config.event_lock_status_changed)
 
