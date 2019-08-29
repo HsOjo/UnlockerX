@@ -3,7 +3,7 @@ import sys
 import time
 import traceback
 from io import StringIO
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, TimeoutExpired
 
 
 def popen(cmd, sys_env=True, **kwargs):
@@ -12,14 +12,15 @@ def popen(cmd, sys_env=True, **kwargs):
     return Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding='utf-8', **kwargs)
 
 
-def execute(cmd, input=None, timeout=None, **kwargs):
+def execute(cmd, input_str=None, timeout=None, **kwargs):
     p = popen(cmd, **kwargs)
-    if input is not None:
-        p.stdin.write(input)
-        p.stdin.close()
-    out = p.stdout.read()
-    err = p.stderr.read()
-    stat = p.wait(timeout)
+    try:
+        out, err = p.communicate(input_str, timeout=timeout)
+    except TimeoutExpired:
+        out = ''
+        err = get_exception()
+        p.kill()
+    stat = p.returncode
     return stat, out, err
 
 

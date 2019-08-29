@@ -48,19 +48,6 @@ class ObjectConvertor:
 class AppleScript:
     @staticmethod
     def exec(code: str, timeout=None):
-        stat = -1
-        out = ''
-
-        try:
-            p = common.popen('/usr/bin/osascript')
-            p.stdin.write(code)
-            p.stdin.close()
-            out = p.stdout.read()
-            err = p.stderr.read()
-            stat = p.wait(timeout)
-        except:
-            err = common.get_exception()
-
-        log.append(AppleScript.exec, 'AppleScript', {'code': code, 'status': stat, 'output': out, 'error': err})
-
+        stat, out, err = common.execute('/usr/bin/osascript', code, timeout)
+        log.append(AppleScript.exec, 'AppleScript', locals())
         return stat, out, err

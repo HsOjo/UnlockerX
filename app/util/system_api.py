@@ -2,7 +2,7 @@ import os
 import re
 
 from app import common
-from app.util import object_convert
+from app.util import object_convert, log
 
 
 def open_url(url, new=False, wait=False, bundle=None):
@@ -25,19 +25,8 @@ def check_admin(username=''):
 
 
 def sudo(command: str, password: str, timeout=None):
-    stat = -1
-    out = ''
-
-    try:
-        p = common.popen('/usr/bin/sudo -S %s' % (command))
-        p.stdin.write(password + '\n')
-        p.stdin.close()
-        out = p.stdout.read()
-        err = p.stderr.read()
-        stat = p.wait(timeout)
-    except:
-        err = common.get_exception()
-
+    stat, out, err = common.execute('/usr/bin/sudo -S %s' % (command), '%s\n' % password, timeout)
+    log.append(sudo, 'sudo', locals())
     return stat, out, err
 
 
