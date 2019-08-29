@@ -374,7 +374,7 @@ class Application(ApplicationBase, ApplicationView):
 
     def check_accessibility(self, welcome=False):
         for i in range(2):
-            [stat, _, err] = osa_api.key_stroke('key code 105', constant=True)
+            [stat, _, err] = osa_api.key_stroke('key code 63', constant=True)
             if stat == 1 and '1002' in err:
                 if i == 0:
                     self.message_box(self.lang.title_welcome if welcome else self.lang.title_info,
@@ -382,6 +382,8 @@ class Application(ApplicationBase, ApplicationView):
                     system_api.open_preference('Security', wait=True)
                 elif i == 1:
                     self.message_box(self.lang.title_info, self.lang.description_cancel_accessibility)
+            elif stat == 0:
+                break
 
     def welcome(self):
         self.about(True)
