@@ -25,6 +25,7 @@ class ApplicationBase:
         self.menu_check_update = None  # type: rumps.MenuItem
 
         self.is_admin = system_api.check_admin()
+        threading.Thread(target=self.check_update, args=(False,)).start()
 
     def add_menu(self, name, title='', callback=None, parent=None):
         if parent is None:
@@ -242,30 +243,33 @@ class ApplicationBase:
 
         return False
 
-    def check_update(self, sender, test=False):
+    def check_update(self, by_user=False, test=False):
         try:
             release = github.get_latest_release(Const.author, Const.app_name, timeout=5)
             log.append(self.check_update, 'Info', release)
 
-            if test or common.compare_version(Const.version, release['tag_name']):
+            have_new = test or common.compare_version(Const.version, release['tag_name'])
+
+            if have_new:
                 rumps.notification(
                     self.lang.noti_update_version % release['name'],
                     self.lang.noti_update_time % release['published_at'],
                     release['body'],
                 )
 
-                if sender == self.menu_check_update:
+            if by_user:
+                if have_new:
                     if len(release['assets']) > 0:
                         system_api.open_url(release['assets'][0]['browser_download_url'])
                     else:
                         system_api.open_url(release['html_url'])
-            else:
-                if sender == self.menu_check_update:
-                    rumps.notification(sender.title, self.lang.noti_update_none, self.lang.noti_update_star)
+                else:
+                    rumps.notification(self.lang.menu_check_update, self.lang.noti_update_none,
+                                       self.lang.noti_update_star)
         except:
             log.append(self.check_update, 'Warning', common.get_exception())
-            if sender == self.menu_check_update:
-                rumps.notification(sender.title, '', self.lang.noti_network_error)
+            if by_user:
+                rumps.notification(self.lang.menu_check_update, '', self.lang.noti_network_error)
 
     def about(self, welcome=False):
         res = osa_api.dialog_input(self.lang.menu_about if not welcome else self.lang.title_welcome,
@@ -277,7 +281,7 @@ class ApplicationBase:
         if res == ':export log':
             self.export_log()
         elif res == ':check update':
-            self.check_update(self.menu_check_update, True)
+            self.check_update(by_user=True, test=True)
         elif res == ':restart':
             self.restart()
         elif res == ':debug':

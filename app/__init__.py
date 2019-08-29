@@ -63,7 +63,7 @@ class Application(ApplicationBase, ApplicationView):
                                callback=lambda sender: self.set_disable_near_unlock(not sender.state))
         self.set_menu_callback(self.menu_select_language, callback=lambda _: self.select_language())
         self.set_menu_callback(self.menu_check_update, callback=(
-            lambda sender: Thread(target=self.check_update, args=(sender,)).start()
+            lambda sender: Thread(target=self.check_update, args=(True,)).start()
         ))
         self.set_menu_callback(self.menu_about, callback=lambda _: self.about())
         self.set_menu_callback(self.menu_quit, callback=lambda _: self.quit())
