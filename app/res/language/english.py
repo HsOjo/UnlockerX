@@ -39,6 +39,8 @@ You need click "Privacy" - "Accessibility" on the next window, And add "%s" to t
     description_welcome_pair_device = '''Before bind bluetooth device, You need to pair your bluetooth device on next window.'''
     description_welcome_end = '''Excellent! Now %s will be working.
 Enjoy yourself!''' % Const.app_name
+    description_cancel_accessibility = '''You canceled "Accessibility Setting", "%s" will can't work normally.''' % (
+        Const.app_name)
 
     view_device_name = 'Device Name: %s'
     view_device_address = 'Device Address: %s'

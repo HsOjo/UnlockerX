@@ -241,10 +241,10 @@ class Application(ApplicationBase, ApplicationView):
                 if not self.disable_near_unlock and self.is_locked and not self.lid_stat:
                     if signal_value is not None and signal_value > self.config.weak_signal_value:
                         is_wake = self.is_lid_wake or self.is_sleep_wake or self.is_idle_wake
-                        if self.unlock_count > Const.unlock_count_limit:
+                        if is_wake and self.unlock_count > Const.unlock_count_limit:
                             self.unlock_count = 0
 
-                        if is_wake or (not self.lock_by_user and self.unlock_count <= Const.unlock_count_limit):
+                        if is_wake or (not self.lock_by_user and self.unlock_count <= Const.unlock_count_limit + 1):
                             self.unlock()
                             if self.unlock_count > Const.unlock_count_limit:
                                 self.reset_wake()
@@ -312,6 +312,13 @@ class Application(ApplicationBase, ApplicationView):
     def callback_lock_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
 
+        is_lock = status and not status_prev
+        is_unlock = status_prev and not status
+
+        if is_lock:
+            if self.idle_time < Const.idle_time_short:
+                self.lock_by_user = True
+
         log.append(self.callback_lock_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status), dict(
             lock_by_user=self.lock_by_user,
             unlock_by_user=self.unlock_by_user,
@@ -321,13 +328,9 @@ class Application(ApplicationBase, ApplicationView):
             is_idle_wake=self.is_idle_wake
         ))
 
-        if status and not status_prev:
-            # lock
+        if is_lock:
             self.unlock_by_user = True
-            if self.idle_time < Const.idle_time_short:
-                self.lock_by_user = True
-        elif status_prev and not status:
-            # unlock
+        elif is_unlock:
             if self.unlock_by_user and not self.lock_by_user and self.config.password != '':
                 if not self.disable_near_unlock:
                     self.set_disable_leave_lock(True)
@@ -370,11 +373,15 @@ class Application(ApplicationBase, ApplicationView):
                 break
 
     def check_accessibility(self, welcome=False):
-        [stat, _, err] = osa_api.key_stroke('key code 105', constant=True)
-        if stat == 1 and '1002' in err:
-            self.message_box(self.lang.title_welcome if welcome else self.lang.title_info,
-                             self.lang.description_need_accessibility)
-            system_api.open_preference('Security', wait=True)
+        for i in range(2):
+            [stat, _, err] = osa_api.key_stroke('key code 105', constant=True)
+            if stat == 1 and '1002' in err:
+                if i == 0:
+                    self.message_box(self.lang.title_welcome if welcome else self.lang.title_info,
+                                     self.lang.description_need_accessibility)
+                    system_api.open_preference('Security', wait=True)
+                elif i == 1:
+                    self.message_box(self.lang.title_info, self.lang.description_cancel_accessibility)
 
     def welcome(self):
         self.about(True)

@@ -35,6 +35,7 @@ class Chinese(English):
     description_welcome_pair_device = '''在绑定蓝牙设备之前，你需要在接下来的窗口中，完成蓝牙设备的配对。'''
     description_welcome_end = '''很好！现在 %s 可以开始工作了。
 Enjoy yourself!''' % Const.app_name
+    description_cancel_accessibility = '''你取消了"辅助功能设置"，"%s"将无法正常工作。''' % (Const.app_name)
 
     view_device_name = '设备名称：%s'
     view_device_address = '设备地址：%s'
