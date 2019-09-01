@@ -205,6 +205,9 @@ class Application(ApplicationBase, ApplicationView):
             self.is_locked = is_locked
             self.callback_lock_status_changed(is_locked, is_locked_prev)
 
+    def callback_refresh_view(self, sender: rumps.Timer):
+        self.refresh_device_info()
+
     def callback_refresh(self):
         try:
             # check lid
@@ -419,6 +422,6 @@ class Application(ApplicationBase, ApplicationView):
                 time.sleep(1)
 
         threading.Thread(target=t_refresh).start()
-        rumps.Timer(lambda _: self.refresh_device_info(), 1).start()
+        rumps.Timer(self.callback_refresh_view, 1).start()
 
         super().run()
