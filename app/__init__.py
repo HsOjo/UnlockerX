@@ -21,8 +21,6 @@ class Application(ApplicationBase, ApplicationView):
         ApplicationView.__init__(self)
         ApplicationBase.__init__(self, Config)
 
-        osa_api.set_require_password_wake()
-
         self.menu_cat = []
         self.init_menu()
 
@@ -147,7 +145,7 @@ class Application(ApplicationBase, ApplicationView):
 
     def lock_now(self, by_user=False):
         log.append(self.lock_now, 'Info')
-        if not self.is_locked:
+        if not self.is_locked and not self.is_wake:
             self.lock_time = None
             self.lock_by_user = by_user
             if self.config.use_screen_saver_replace_lock:
@@ -156,6 +154,9 @@ class Application(ApplicationBase, ApplicationView):
                 system_api.sleep(True)
 
     def lock_delay(self, wait):
+        if not self.is_locked or self.lid_stat:
+            return
+
         log.append(self.lock_delay, 'Info', wait)
         with self.t_lock:
             if wait is None:
@@ -240,11 +241,11 @@ class Application(ApplicationBase, ApplicationView):
 
                 if not self.disable_near_unlock and self.is_locked and not self.lid_stat:
                     if signal_value is not None and signal_value > self.config.weak_signal_value:
-                        is_wake = self.is_lid_wake or self.is_sleep_wake or self.is_idle_wake
-                        if is_wake and self.unlock_count > Const.unlock_count_limit:
+                        if self.is_wake and self.unlock_count > Const.unlock_count_limit:
                             self.unlock_count = 0
 
-                        if is_wake or (not self.lock_by_user and self.unlock_count <= Const.unlock_count_limit + 1):
+                        if self.is_wake or (
+                                not self.lock_by_user and self.unlock_count <= Const.unlock_count_limit + 1):
                             self.unlock()
                             if self.unlock_count > Const.unlock_count_limit:
                                 self.reset_wake()
@@ -342,6 +343,10 @@ class Application(ApplicationBase, ApplicationView):
 
         self.event_trigger(self.callback_lock_status_changed, params, self.config.event_lock_status_changed)
 
+    @property
+    def is_wake(self):
+        return self.is_lid_wake or self.is_sleep_wake or self.is_idle_wake
+
     def reset_wake(self):
         self.is_sleep_wake = False
         self.is_lid_wake = False
@@ -403,6 +408,8 @@ class Application(ApplicationBase, ApplicationView):
             self.welcome()
         else:
             self.check_accessibility()
+
+        osa_api.set_require_password_wake()
 
         threading.Thread(target=self.thread_monitor).start()
 
