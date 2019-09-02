@@ -1,12 +1,29 @@
+import os
+import sys
 import time
 from io import StringIO
 from threading import Lock
 
+from app.res.const import Const
 from app.util import io_helper, object_convert
 
 io_log = StringIO()
 io_err = StringIO()
 lock_log = Lock()
+
+
+def init_app_log():
+    log_dir = os.path.expanduser('~/Library/Logs/')
+
+    path_log = '%s/%s.log' % (log_dir, Const.app_name)
+    path_err = '%s/%s.err' % (log_dir, Const.app_name)
+
+    io_log = open(path_log, 'w+')
+    io_err = open(path_err, 'w+')
+
+    # redirect stdout and stderr.
+    sys.stdout = io_log
+    sys.stderr = io_err
 
 
 def extract_log():
@@ -40,3 +57,4 @@ def append(src, tag='Info', *args):
 
     with lock_log:
         print('[%s] %s %s\n\t' % (tag, time.ctime(), source), *log_items)
+        io_log.flush()

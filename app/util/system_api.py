@@ -1,8 +1,6 @@
 import os
 import re
 
-import Quartz
-
 from app import common
 from app.util import object_convert, log
 
@@ -49,6 +47,7 @@ def cg_session_info_py2():
 
 
 def cg_session_info():
+    import Quartz
     return getattr(Quartz, 'CGSessionCopyCurrentDictionary')()
 
 
