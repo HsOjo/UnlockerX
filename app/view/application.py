@@ -20,6 +20,7 @@ class ApplicationView(ViewBase):
         self.menu_about = None  # type: rumps.MenuItem
         self.menu_quit = None  # type: rumps.MenuItem
 
+        self.menu_set_bluetooth_refresh_rate = None  # type: rumps.MenuItem
         self.menu_set_weak_signal_value = None  # type: rumps.MenuItem
         self.menu_set_weak_signal_lock_delay = None  # type: rumps.MenuItem
         self.menu_set_disconnect_lock_delay = None  # type: rumps.MenuItem
@@ -58,6 +59,8 @@ class ApplicationView(ViewBase):
         # menu_application end
 
         # menu_preferences
+        self.add_menu('set_bluetooth_refresh_rate', parent=self.menu_preferences)
+        self.add_menu('-', parent=self.menu_preferences)
         self.add_menu('set_weak_signal_value', parent=self.menu_preferences)
         self.add_menu('-', parent=self.menu_preferences)
         self.add_menu('set_weak_signal_lock_delay', parent=self.menu_preferences)

@@ -41,6 +41,9 @@ You need click "Privacy" - "Accessibility" on the next window, And add "%s" to t
 Enjoy yourself!''' % Const.app_name
     description_cancel_accessibility = '''You canceled "Accessibility Setting", "%s" will can't work normally.''' % (
         Const.app_name)
+    description_set_bluetooth_refresh_rate = '''Set Bluetooth refresh rate. 
+Unit: second, The maximal refresh rate is "1" second per time.
+(If the refresh rate higher(the value is smaller), Then the battery life will lower.)'''
 
     view_device_name = 'Device Name: %s'
     view_device_address = 'Device Address: %s'
@@ -58,6 +61,7 @@ Enjoy yourself!''' % Const.app_name
     menu_set_connect_status_changed_event = 'Set Connect Status Changed Event'
     menu_set_weak_signal_lock_delay = 'Set Weak Signal Lock Delay'
     menu_set_disconnect_lock_delay = 'Set Disconnect Lock Delay'
+    menu_set_bluetooth_refresh_rate = 'Set Bluetooth Refresh Rate'
     menu_set_weak_signal_value = 'Set Weak Signal Value'
     menu_set_password = 'Set Current User Password'
     menu_select_language = 'Set Language'

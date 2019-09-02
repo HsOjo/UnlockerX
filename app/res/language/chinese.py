@@ -36,6 +36,9 @@ class Chinese(English):
     description_welcome_end = '''很好！现在 %s 可以开始工作了。
 Enjoy yourself!''' % Const.app_name
     description_cancel_accessibility = '''你取消了"辅助功能设置"，"%s"将无法正常工作。''' % (Const.app_name)
+    description_set_bluetooth_refresh_rate = '''设置蓝牙刷新率
+单位：秒，最高刷新率为 "1" 秒/次。
+（如果刷新率较高（值较小），则电池使用时间将降低。）'''
 
     view_device_name = '设备名称：%s'
     view_device_address = '设备地址：%s'
@@ -53,6 +56,7 @@ Enjoy yourself!''' % Const.app_name
     menu_set_connect_status_changed_event = '设置连接状态改变事件'
     menu_set_weak_signal_lock_delay = '设置信号弱锁定延迟'
     menu_set_disconnect_lock_delay = '设置断开连接锁定延迟'
+    menu_set_bluetooth_refresh_rate = '设置蓝牙刷新频率'
     menu_set_weak_signal_value = '设置信号弱临界值'
     menu_set_password = '设置当前用户密码'
     menu_select_language = '设置语言'

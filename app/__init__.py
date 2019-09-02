@@ -52,6 +52,8 @@ class Application(ApplicationBase, ApplicationView):
         self.t_lock = threading.Lock()
         self.unlock_count = 0
 
+        self.blue_refresh_time = 0
+
     def bind_menu_callback(self):
         # menu_application
         self.set_menu_callback(self.menu_bind_bluetooth_device, callback=self.bind_bluetooth_device)
@@ -67,6 +69,9 @@ class Application(ApplicationBase, ApplicationView):
         self.set_menu_callback(self.menu_quit, callback=lambda _: self.quit())
 
         # menu_preferences
+        self.set_menu_callback(self.menu_set_bluetooth_refresh_rate,
+                               callback=self.generate_callback_config_input(
+                                   'bluetooth_refresh_rate', 'description_set_bluetooth_refresh_rate', to_int=True))
         self.set_menu_callback(self.menu_set_weak_signal_value,
                                callback=self.generate_callback_config_input(
                                    'weak_signal_value', 'description_set_weak_signal_value', to_int=True))
@@ -227,31 +232,33 @@ class Application(ApplicationBase, ApplicationView):
             self.refresh_cg_session_info()
 
             if self.config.device_address is not None:
-                device_info_prev = self.device_info
-                self.device_info = self.blue_util.info(self.config.device_address)
+                if time.time() - self.blue_refresh_time >= self.config.bluetooth_refresh_rate:
+                    self.blue_refresh_time = time.time()
+                    device_info_prev = self.device_info
+                    self.device_info = self.blue_util.info(self.config.device_address)
 
-                is_connected_prev = device_info_prev.get('is_connected')
-                is_connected = self.device_info.get('is_connected')
-                if is_connected != is_connected_prev:
-                    self.is_connected = is_connected
-                    self.callback_connect_status_changed(is_connected, is_connected_prev)
+                    is_connected_prev = device_info_prev.get('is_connected')
+                    is_connected = self.device_info.get('is_connected')
+                    if is_connected != is_connected_prev:
+                        self.is_connected = is_connected
+                        self.callback_connect_status_changed(is_connected, is_connected_prev)
 
-                signal_value_prev = device_info_prev.get('signal_value')
-                signal_value = self.device_info.get('signal_value')
-                if signal_value != signal_value_prev:
-                    self.signal_value = signal_value
-                    self.callback_signal_value_changed(signal_value, signal_value_prev)
+                    signal_value_prev = device_info_prev.get('signal_value')
+                    signal_value = self.device_info.get('signal_value')
+                    if signal_value != signal_value_prev:
+                        self.signal_value = signal_value
+                        self.callback_signal_value_changed(signal_value, signal_value_prev)
 
-                if not self.disable_near_unlock and self.is_locked and not self.lid_stat:
-                    if signal_value is not None and signal_value > self.config.weak_signal_value:
-                        if self.is_wake and self.unlock_count > Const.unlock_count_limit:
-                            self.unlock_count = 0
+                    if not self.disable_near_unlock and self.is_locked and not self.lid_stat:
+                        if signal_value is not None and signal_value > self.config.weak_signal_value:
+                            if self.is_wake and self.unlock_count > Const.unlock_count_limit:
+                                self.unlock_count = 0
 
-                        if self.is_wake or (
-                                not self.lock_by_user and self.unlock_count <= Const.unlock_count_limit + 1):
-                            self.unlock()
-                            if self.unlock_count > Const.unlock_count_limit:
-                                self.reset_wake()
+                            if self.is_wake or (
+                                    not self.lock_by_user and self.unlock_count <= Const.unlock_count_limit + 1):
+                                self.unlock()
+                                if self.unlock_count > Const.unlock_count_limit:
+                                    self.reset_wake()
         except:
             self.callback_exception()
 

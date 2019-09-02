@@ -13,6 +13,7 @@ class Config(ConfigBase):
     weak_signal_lock_delay = 5
     disconnect_lock_delay = 10
     use_screen_saver_replace_lock = True
+    bluetooth_refresh_rate = 1
 
     event_signal_weak = ''
     event_connect_status_changed = ''
