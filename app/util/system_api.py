@@ -1,6 +1,8 @@
 import os
 import re
 
+import Quartz
+
 from app import common
 from app.util import object_convert, log
 
@@ -39,11 +41,15 @@ def get_system_version():
     return result
 
 
-def cg_session_info():
+def cg_session_info_py2():
     code = 'import Quartz, json; print(json.dumps(dict(Quartz.CGSessionCopyCurrentDictionary())));'
     [stat, out, err] = common.execute('/usr/bin/python', code)
     content = object_convert.from_json(out)  # type: dict
     return content
+
+
+def cg_session_info():
+    return getattr(Quartz, 'CGSessionCopyCurrentDictionary')()
 
 
 def sleep(display_only=False):
