@@ -184,7 +184,6 @@ class ApplicationBase:
     def restart(self):
         [_, path] = pyinstaller.get_application_info()
         if path is not None:
-            self.quit()
             system_api.open_url(path, True)
         else:
             # quick restart for debug.
@@ -195,7 +194,7 @@ class ApplicationBase:
             if path is not None:
                 os.system('%s %s' % (path, ' '.join(sys.argv)))
 
-        rumps.quit_application()
+        self.quit()
 
     def export_log(self):
         folder = osa_api.choose_folder(self.lang.menu_export_log)

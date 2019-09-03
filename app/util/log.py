@@ -18,6 +18,7 @@ def init_app_log():
     path_log = '%s/%s.log' % (log_dir, Const.app_name)
     path_err = '%s/%s.err' % (log_dir, Const.app_name)
 
+    global io_log, io_err
     io_log = open(path_log, 'w+')
     io_err = open(path_err, 'w+')
 
