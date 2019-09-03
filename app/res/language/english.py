@@ -31,12 +31,12 @@ More information can found on GitHub "doc/" folder. (such as examples.)''' % Con
     description_bind_bluetooth_device = '''Bind Bluetooth device. If your device not in this list, You should pair your device on "System Preferences" - "Bluetooth" first.'''
     description_set_weak_signal_value = '''Weak signal will trigger weak signal events.
 Unit: dBm, The signal value smaller, the signal weaker.'''
-    description_set_weak_signal_lock_delay = '''On device weak signal, lock screen delay time.'''
-    description_set_disconnect_lock_delay = '''On device disconnect, lock screen delay time.'''
+    description_set_weak_signal_lock_delay = '''On Bluetooth device weak signal, lock screen delay time.'''
+    description_set_disconnect_lock_delay = '''On Bluetooth device disconnect, lock screen delay time.'''
     description_need_accessibility = '''%s need permissions to unlock your mac.
 You need click "Privacy" - "Accessibility" on the next window, And add "%s" to the control list.''' % (
         Const.app_name, Const.app_name)
-    description_welcome_pair_device = '''Before bind bluetooth device, You need to pair your bluetooth device on next window.'''
+    description_welcome_pair_device = '''Before bind Bluetooth device, You need to pair your Bluetooth device on next window.'''
     description_welcome_end = '''Excellent! Now %s will be working.
 Enjoy yourself!''' % Const.app_name
     description_cancel_accessibility = '''You canceled "Accessibility Setting", "%s" will can't work normally.''' % (

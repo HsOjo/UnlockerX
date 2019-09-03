@@ -30,6 +30,8 @@ class Chinese(English):
     description_bind_bluetooth_device = '''绑定蓝牙设备。如果你的设备不在该列表，你应该先到 "系统偏好设置" - "蓝牙" 配对你的设备。'''
     description_set_weak_signal_value = '''信号弱将触发弱信号事件。
 单位：dBm，信号值越小，信号越弱。'''
+    description_set_weak_signal_lock_delay = '''在蓝牙设备信号弱时，触发锁屏延迟的时间。'''
+    description_set_disconnect_lock_delay = '''在蓝牙设备断开时，触发锁屏延迟的时间。'''
     description_need_accessibility = '''%s 需要权限以解锁你的Mac。
 你需要在接下来的窗口中点击 "隐私" - "辅助功能"，并将 "%s" 添加到控制列表。''' % (Const.app_name, Const.app_name)
     description_welcome_pair_device = '''在绑定蓝牙设备之前，你需要在接下来的窗口中，完成蓝牙设备的配对。'''
