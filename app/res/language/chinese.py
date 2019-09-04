@@ -65,6 +65,7 @@ Enjoy yourself!''' % Const.app_name
     menu_set_startup = '设置登录启动'
     menu_check_update = '检查更新'
     menu_clear_config = '清空配置文件'
+    menu_signal_value_visible_on_icon = '显示信号值在图标旁'
     menu_use_screen_saver_replace_lock = '使用屏幕保护替代锁定'
     menu_export_log = '导出日志文件'
     menu_about = '关于'

@@ -87,6 +87,8 @@ class Application(ApplicationBase, ApplicationView):
                                    'password', 'description_set_password', hidden=True))
 
         # menu_advanced_options
+        self.set_menu_callback(self.menu_signal_value_visible_on_icon,
+                               callback=self.generate_callback_switch_config('signal_value_visible_on_icon'))
         self.set_menu_callback(self.menu_export_log, callback=lambda _: self.export_log())
         self.set_menu_callback(self.menu_clear_config, callback=self.clear_config)
         self.set_menu_callback(self.menu_use_screen_saver_replace_lock,
@@ -131,9 +133,13 @@ class Application(ApplicationBase, ApplicationView):
             'view_device_address', self.lang.view_device_address % (
                 self.device_info.get('address', self.lang.none)))
 
+        signal_value = self.lang.none
+        if self.signal_value is not None:
+            signal_value = '%s %s' % (self.signal_value, self.lang.unit_dbm)
         self.set_menu_title(
-            'view_device_signal_value', self.lang.view_device_signal_value % (
-                '%s dBm' % self.signal_value if self.signal_value is not None else self.lang.none))
+            'view_device_signal_value', self.lang.view_device_signal_value % (signal_value))
+
+        self.app.title = signal_value if self.config.signal_value_visible_on_icon else None
 
     def init_menu(self):
         self.setup_menus()
@@ -146,6 +152,7 @@ class Application(ApplicationBase, ApplicationView):
         self.inject_menu_value()
 
     def inject_menu_value(self):
+        self.menu_signal_value_visible_on_icon.state = self.config.signal_value_visible_on_icon
         self.menu_use_screen_saver_replace_lock.state = self.config.use_screen_saver_replace_lock
 
     def lock_now(self, by_user=False):

@@ -68,6 +68,7 @@ Unit: second, The maximal refresh rate is "1" second per time.
     menu_set_startup = 'Set Login Startup'
     menu_check_update = 'Check Update'
     menu_clear_config = 'Clear Config'
+    menu_signal_value_visible_on_icon = 'Signal Value Visible On Icon'
     menu_use_screen_saver_replace_lock = 'Use ScreenSaver Replace Lock'
     menu_export_log = 'Export Log File'
     menu_about = 'About'
@@ -85,3 +86,5 @@ Unit: second, The maximal refresh rate is "1" second per time.
 
     noti_password_need = 'Unlock failed! Need set password.'
     noti_unlock_error = 'Unlock failed! Operation invalid. Please check "Accessibility Settings".'
+
+    unit_dbm = 'dBm'
