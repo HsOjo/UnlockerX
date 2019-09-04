@@ -149,7 +149,13 @@ class Application(ApplicationBase, ApplicationView):
         self.menu_use_screen_saver_replace_lock.state = self.config.use_screen_saver_replace_lock
 
     def lock_now(self, by_user=False):
-        log.append(self.lock_now, 'Info')
+        log.append(self.lock_now, 'Info', dict(
+            is_locked=self.is_locked,
+            is_lid_wake=self.is_lid_wake,
+            is_idle_wake=self.is_idle_wake,
+            is_sleep_wake=self.is_sleep_wake,
+        ))
+
         if not self.is_locked and not self.is_wake:
             self.lock_time = None
             self.lock_by_user = by_user
@@ -159,10 +165,10 @@ class Application(ApplicationBase, ApplicationView):
                 system_api.sleep(True)
 
     def lock_delay(self, wait):
-        if not self.is_locked or self.lid_stat:
+        log.append(self.lock_delay, 'Info', wait)
+        if self.is_locked or self.lid_stat:
             return
 
-        log.append(self.lock_delay, 'Info', wait)
         with self.t_lock:
             if wait is None:
                 self.lock_time = None
@@ -170,7 +176,12 @@ class Application(ApplicationBase, ApplicationView):
                 self.lock_time = time.time() + wait
 
     def unlock(self):
-        log.append(self.unlock, 'Info', dict(unlock_count=self.unlock_count))
+        log.append(self.unlock, 'Info', dict(
+            unlock_count=self.unlock_count,
+            is_lid_wake=self.is_lid_wake,
+            is_idle_wake=self.is_idle_wake,
+            is_sleep_wake=self.is_sleep_wake,
+        ))
 
         result = False
         if self.is_locked:
@@ -249,11 +260,11 @@ class Application(ApplicationBase, ApplicationView):
                         self.signal_value = signal_value
                         self.callback_signal_value_changed(signal_value, signal_value_prev)
 
-                    is_idle = self.idle_time >= Const.idle_time
-                    is_wake = self.is_wake
-                    if not self.disable_near_unlock and self.is_locked and not self.lid_stat and (is_wake or not is_idle):
+                    if not self.disable_near_unlock and self.is_locked:
+                        is_idle = self.idle_time >= Const.idle_time
+                        is_wake = self.is_wake
                         is_weak_signal = signal_value is None or signal_value <= self.config.weak_signal_value
-                        if not is_weak_signal:
+                        if not self.lid_stat and (is_wake or not is_idle) and not is_weak_signal:
                             if is_wake and self.unlock_count > Const.unlock_count_limit:
                                 self.unlock_count = 0
 
@@ -271,7 +282,7 @@ class Application(ApplicationBase, ApplicationView):
                 if idle_time_prev >= Const.idle_time:
                     # idle reset
                     self.unlock_count = 0
-                    self.is_idle_wake = True
+                    self.is_idle_wake = self.is_locked
 
     def callback_signal_value_changed(self, signal_value: int, signal_value_prev: int = None):
         if signal_value is not None:
@@ -319,7 +330,7 @@ class Application(ApplicationBase, ApplicationView):
 
         log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         if status and not status_prev:
-            self.is_lid_wake = True
+            self.is_lid_wake = self.is_locked
 
         self.event_trigger(self.callback_lid_status_changed, params, self.config.event_lid_status_changed)
 
@@ -372,7 +383,7 @@ class Application(ApplicationBase, ApplicationView):
             try:
                 # check sleep
                 if time.time() - last_time > 1:
-                    self.is_sleep_wake = True
+                    self.is_sleep_wake = self.is_locked
 
                 # get lock time
                 with self.t_lock:

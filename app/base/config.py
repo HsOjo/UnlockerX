@@ -35,3 +35,11 @@ class ConfigBase:
     def clear(self):
         if os.path.exists(self._config_path):
             os.unlink(self._config_path)
+
+    def clean_text(self, text: str):
+        for f in self._protect_fields:
+            v = getattr(self, f, '')
+            if v != '':
+                text = text.replace(v, Const.protector)
+
+        return text

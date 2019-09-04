@@ -202,11 +202,8 @@ class ApplicationBase:
             log_str = log.extract_log()
             err_str = log.extract_err()
 
-            for f in self.config._protect_fields:
-                v = getattr(self.config, f, '')
-                if v != '':
-                    log_str = log_str.replace(v, Const.protector)
-                    err_str = err_str.replace(v, Const.protector)
+            log_str = self.config.clean_text(log_str)
+            err_str = self.config.clean_text(err_str)
 
             if log_str != '':
                 with open('%s/%s' % (folder, '%s.log' % Const.app_name), 'w') as io:
