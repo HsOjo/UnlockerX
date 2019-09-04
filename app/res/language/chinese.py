@@ -33,7 +33,8 @@ class Chinese(English):
     description_set_weak_signal_lock_delay = '''在蓝牙设备信号弱时，触发锁屏延迟的时间。'''
     description_set_disconnect_lock_delay = '''在蓝牙设备断开时，触发锁屏延迟的时间。'''
     description_need_accessibility = '''%s 需要权限以解锁你的Mac。
-你需要在接下来的窗口中点击 "隐私" - "辅助功能"，并将 "%s" 添加到控制列表。''' % (Const.app_name, Const.app_name)
+你需要在接下来的窗口中点击 "隐私" - "辅助功能"，并将 "%s" 添加到控制列表。
+（如果这个应用已经添加过，你需要重新选中这个应用的选择框。）''' % (Const.app_name, Const.app_name)
     description_welcome_pair_device = '''在绑定蓝牙设备之前，你需要在接下来的窗口中，完成蓝牙设备的配对。'''
     description_welcome_end = '''很好！现在 %s 可以开始工作了。
 Enjoy yourself!''' % Const.app_name

@@ -34,7 +34,8 @@ Unit: dBm, The signal value smaller, the signal weaker.'''
     description_set_weak_signal_lock_delay = '''On Bluetooth device weak signal, lock screen delay time.'''
     description_set_disconnect_lock_delay = '''On Bluetooth device disconnect, lock screen delay time.'''
     description_need_accessibility = '''%s need permissions to unlock your mac.
-You need click "Privacy" - "Accessibility" on the next window, And add "%s" to the control list.''' % (
+You need click "Privacy" - "Accessibility" on the next window, And add "%s" to the control list.
+(If it was added, you need to re-check the checkbox with this application.)''' % (
         Const.app_name, Const.app_name)
     description_welcome_pair_device = '''Before bind Bluetooth device, You need to pair your Bluetooth device on next window.'''
     description_welcome_end = '''Excellent! Now %s will be working.
