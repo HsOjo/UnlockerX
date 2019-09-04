@@ -285,11 +285,11 @@ class Application(ApplicationBase, ApplicationView):
 
     def callback_idle_time_changed(self, idle_time: float, idle_time_prev: float = None):
         if idle_time_prev is not None:
-            if idle_time < idle_time_prev:
-                if idle_time_prev >= Const.idle_time:
-                    # idle reset
-                    self.unlock_count = 0
-                    self.is_idle_wake = self.is_locked
+            is_idle_reset = idle_time < idle_time_prev
+            if is_idle_reset and idle_time_prev >= Const.idle_time:
+                # idle reset
+                self.unlock_count = 0
+                self.is_idle_wake = self.is_locked
 
     def callback_signal_value_changed(self, signal_value: int, signal_value_prev: int = None):
         if signal_value is not None:
@@ -337,7 +337,7 @@ class Application(ApplicationBase, ApplicationView):
 
         log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         if status and not status_prev:
-            self.is_lid_wake = self.is_locked
+            self.is_lid_wake = True
 
         self.event_trigger(self.callback_lid_status_changed, params, self.config.event_lid_status_changed)
 
@@ -390,7 +390,7 @@ class Application(ApplicationBase, ApplicationView):
             try:
                 # check sleep
                 if time.time() - last_time > 1:
-                    self.is_sleep_wake = self.is_locked
+                    self.is_sleep_wake = True
 
                 # get lock time
                 with self.t_lock:
