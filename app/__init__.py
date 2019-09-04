@@ -249,12 +249,15 @@ class Application(ApplicationBase, ApplicationView):
                         self.signal_value = signal_value
                         self.callback_signal_value_changed(signal_value, signal_value_prev)
 
-                    if not self.disable_near_unlock and self.is_locked and not self.lid_stat:
-                        if signal_value is not None and signal_value > self.config.weak_signal_value:
-                            if self.is_wake and self.unlock_count > Const.unlock_count_limit:
+                    is_idle = self.idle_time >= Const.idle_time
+                    is_wake = self.is_wake
+                    if not self.disable_near_unlock and self.is_locked and not self.lid_stat and (is_wake or not is_idle):
+                        is_weak_signal = signal_value is None or signal_value <= self.config.weak_signal_value
+                        if not is_weak_signal:
+                            if is_wake and self.unlock_count > Const.unlock_count_limit:
                                 self.unlock_count = 0
 
-                            if self.is_wake or (
+                            if is_wake or (
                                     not self.lock_by_user and self.unlock_count <= Const.unlock_count_limit + 1):
                                 self.unlock()
                                 if self.unlock_count > Const.unlock_count_limit:
