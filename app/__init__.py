@@ -183,13 +183,6 @@ class Application(ApplicationBase, ApplicationView):
                 self.lock_time = time.time() + wait
 
     def unlock(self):
-        log.append(self.unlock, 'Info', dict(
-            unlock_count=self.unlock_count,
-            is_lid_wake=self.is_lid_wake,
-            is_idle_wake=self.is_idle_wake,
-            is_sleep_wake=self.is_sleep_wake,
-        ))
-
         result = False
         if self.is_locked:
             if self.config.password != '':
@@ -201,12 +194,19 @@ class Application(ApplicationBase, ApplicationView):
                         dict(key='return', constant=True),
                     ]
 
-                    result = True
                     for key in keys:
+                        self.refresh_cg_session_info()
+                        if not self.is_locked:
+                            result = True
+                            break
+
                         [stat, _, _] = osa_api.key_stroke(**key)
                         if stat != 0:
-                            result = False
                             break
+
+                    if not result:
+                        self.refresh_cg_session_info()
+                        result = not self.is_locked
                 elif self.unlock_count == Const.unlock_count_limit:
                     rumps.notification(self.lang.title_info, '', self.lang.noti_unlock_error)
 
@@ -214,6 +214,14 @@ class Application(ApplicationBase, ApplicationView):
             elif self.hint_set_password:
                 self.hint_set_password = False
                 rumps.notification(self.lang.title_info, '', self.lang.noti_password_need)
+
+        log.append(self.unlock, 'Info', dict(
+            unlock_count=self.unlock_count,
+            is_lid_wake=self.is_lid_wake,
+            is_idle_wake=self.is_idle_wake,
+            is_sleep_wake=self.is_sleep_wake,
+            result=result,
+        ))
 
         return result
 
@@ -417,7 +425,7 @@ class Application(ApplicationBase, ApplicationView):
                 if i == 0:
                     self.message_box(self.lang.title_welcome if welcome else self.lang.title_info,
                                      self.lang.description_need_accessibility)
-                    system_api.open_preference('Security', wait=True)
+                    system_api.open_preference('Security', wait=True, new=True)
                 elif i == 1:
                     self.message_box(self.lang.title_info, self.lang.description_cancel_accessibility)
             elif stat == 0:
@@ -430,7 +438,7 @@ class Application(ApplicationBase, ApplicationView):
         self.check_accessibility(True)
         self.menu_set_password.callback(self.menu_set_password)
         self.message_box(self.lang.title_welcome, self.lang.description_welcome_pair_device)
-        system_api.open_preference('Bluetooth', wait=True)
+        system_api.open_preference('Bluetooth', wait=True, new=True)
         self.bind_bluetooth_device(self.menu_bind_bluetooth_device)
         self.message_box(self.lang.title_welcome, self.lang.description_welcome_end)
 
