@@ -38,6 +38,7 @@ class Application(ApplicationBase, ApplicationView):
         self.is_lid_wake = False
         self.is_idle_wake = False
 
+        self.lock_by_app = False
         self.lock_by_user = False
         self.unlock_by_user = False
 
@@ -155,7 +156,7 @@ class Application(ApplicationBase, ApplicationView):
         self.menu_signal_value_visible_on_icon.state = self.config.signal_value_visible_on_icon
         self.menu_use_screen_saver_replace_lock.state = self.config.use_screen_saver_replace_lock
 
-    def lock_now(self, by_user=False):
+    def lock_now(self, by_app=True):
         log.append(self.lock_now, 'Info', dict(
             is_locked=self.is_locked,
             is_lid_wake=self.is_lid_wake,
@@ -165,7 +166,7 @@ class Application(ApplicationBase, ApplicationView):
 
         if not self.is_locked and not self.is_wake:
             self.lock_time = None
-            self.lock_by_user = by_user
+            self.lock_by_app = by_app
             if self.config.use_screen_saver_replace_lock:
                 osa_api.screen_save()
             else:
@@ -283,8 +284,8 @@ class Application(ApplicationBase, ApplicationView):
                             if is_wake and self.unlock_count > Const.unlock_count_limit:
                                 self.unlock_count = 0
 
-                            if is_wake or (
-                                    not self.lock_by_user and self.unlock_count <= Const.unlock_count_limit + 1):
+                            need_unlock = self.lock_by_app or not self.lock_by_user
+                            if is_wake or (need_unlock and self.unlock_count <= Const.unlock_count_limit + 1):
                                 if not system_api.check_display_sleep():
                                     self.unlock()
                                     if self.unlock_count > Const.unlock_count_limit:
@@ -357,7 +358,7 @@ class Application(ApplicationBase, ApplicationView):
         is_unlock = status_prev and not status
 
         if is_lock:
-            if self.idle_time < Const.idle_time_short:
+            if self.idle_time < Const.idle_time_short and not self.lock_by_app:
                 self.lock_by_user = True
 
         log.append(self.callback_lock_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status), dict(
@@ -379,6 +380,7 @@ class Application(ApplicationBase, ApplicationView):
 
             self.reset_wake()
             self.lock_by_user = False
+            self.lock_by_app = False
             self.hint_set_password = True
             self.unlock_count = 0
 
