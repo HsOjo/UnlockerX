@@ -277,9 +277,10 @@ class Application(ApplicationBase, ApplicationView):
 
                             if is_wake or (
                                     not self.lock_by_user and self.unlock_count <= Const.unlock_count_limit + 1):
-                                self.unlock()
-                                if self.unlock_count > Const.unlock_count_limit:
-                                    self.reset_wake()
+                                if not system_api.check_display_sleep():
+                                    self.unlock()
+                                    if self.unlock_count > Const.unlock_count_limit:
+                                        self.reset_wake()
         except:
             self.callback_exception()
 
@@ -361,6 +362,7 @@ class Application(ApplicationBase, ApplicationView):
         ))
 
         if is_lock:
+            # reset user unlock status.
             self.unlock_by_user = True
         elif is_unlock:
             if self.unlock_by_user and not self.lock_by_user and self.config.password != '':
