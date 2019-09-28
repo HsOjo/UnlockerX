@@ -26,17 +26,18 @@ class Application(ApplicationBase, ApplicationView):
 
         self.blue_util = BlueUtil('%s/app/lib/blueutil/blueutil' % pyinstaller.get_runtime_dir())
 
-        self.is_locked = None  # type: bool
-        self.is_connected = None  # type: bool
-
         self.lock_time = None  # type: float
         self.idle_time = None  # type: float
         self.lid_stat = None  # type: bool
         self.signal_value = None  # type: int
 
+        self.is_locked = False
+        self.is_connected = False
+
         self.is_sleep_wake = False
         self.is_lid_wake = False
         self.is_idle_wake = False
+        self.is_weak = False
 
         self.lock_by_app = False
         self.lock_by_user = False
@@ -304,13 +305,16 @@ class Application(ApplicationBase, ApplicationView):
     def callback_signal_value_changed(self, signal_value: int, signal_value_prev: int = None):
         if signal_value is not None:
             is_weak = signal_value <= self.config.weak_signal_value
-            is_weak_prev = True
-            if signal_value_prev is not None:
-                is_weak_prev = signal_value_prev <= self.config.weak_signal_value
+            is_weak_prev = self.is_weak
 
-            if (signal_value_prev is not None and signal_value < signal_value_prev) and is_weak and not is_weak_prev:
+            self.is_weak = is_weak
+
+            is_increase = signal_value_prev is None or signal_value > signal_value_prev
+            is_decrease = signal_value_prev is not None and signal_value < signal_value_prev
+
+            if is_decrease and is_weak and not is_weak_prev:
                 self.callback_signal_weak(is_weak, is_weak_prev)
-            elif (signal_value_prev is None or signal_value > signal_value_prev) and is_weak_prev and not is_weak:
+            elif is_increase and is_weak_prev and not is_weak:
                 self.callback_signal_weak(is_weak, is_weak_prev)
 
     def callback_signal_weak(self, status: bool, status_prev: bool = None):
@@ -338,7 +342,8 @@ class Application(ApplicationBase, ApplicationView):
             pyinstaller.get_runtime_dir(), 'icon.png' if status else 'icon_disconnect.png')
 
         if status_prev is not None and not status:
-            self.lock_delay(self.config.disconnect_lock_delay)
+            if not self.is_weak and self.lock_time is None:
+                self.lock_delay(self.config.disconnect_lock_delay)
 
         self.event_trigger(self.callback_connect_status_changed, params, self.config.event_connect_status_changed)
 

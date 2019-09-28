@@ -58,7 +58,9 @@ class ApplicationBase:
                     setattr(self, key, self.menu[k]['object'])
 
     def set_menu_title(self, name, title):
-        self.app.menu[name].title = title
+        menu = self.app.menu[name]  # type: rumps.MenuItem
+        if menu.title != title:
+            menu.title = title
 
     def set_menu_callback(self, key, callback=None):
         if not isinstance(key, str):
