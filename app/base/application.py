@@ -172,6 +172,7 @@ class ApplicationBase:
             self.quit()
         if osa_api.alert(self.lang.title_crash, self.lang.description_crash):
             self.export_log()
+            self.restart()
 
     def message_box(self, title, description):
         return osa_api.dialog_select(title, description, [self.lang.ok])

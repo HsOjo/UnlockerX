@@ -242,57 +242,54 @@ class Application(ApplicationBase, ApplicationView):
         self.refresh_device_info()
 
     def callback_refresh(self):
-        try:
-            # check lid
-            lid_stat_prev = self.lid_stat
-            lid_stat = system_api.check_lid()
-            if lid_stat != lid_stat_prev:
-                self.lid_stat = lid_stat
-                self.callback_lid_status_changed(lid_stat, lid_stat_prev)
+        # check lid
+        lid_stat_prev = self.lid_stat
+        lid_stat = system_api.check_lid()
+        if lid_stat != lid_stat_prev:
+            self.lid_stat = lid_stat
+            self.callback_lid_status_changed(lid_stat, lid_stat_prev)
 
-            # get idle time
-            idle_time_prev = self.idle_time
-            idle_time = system_api.get_hid_idle_time()
-            if idle_time != idle_time_prev:
-                self.idle_time = idle_time
-                self.callback_idle_time_changed(idle_time, idle_time_prev)
+        # get idle time
+        idle_time_prev = self.idle_time
+        idle_time = system_api.get_hid_idle_time()
+        if idle_time != idle_time_prev:
+            self.idle_time = idle_time
+            self.callback_idle_time_changed(idle_time, idle_time_prev)
 
-            self.refresh_cg_session_info()
+        self.refresh_cg_session_info()
 
-            if self.config.device_address is not None:
-                if time.time() - self.blue_refresh_time >= self.config.bluetooth_refresh_rate:
-                    self.blue_refresh_time = time.time()
-                    device_info_prev = self.device_info
-                    self.device_info = self.blue_util.info(self.config.device_address)
+        if self.config.device_address is not None:
+            if time.time() - self.blue_refresh_time >= self.config.bluetooth_refresh_rate:
+                self.blue_refresh_time = time.time()
+                device_info_prev = self.device_info
+                self.device_info = self.blue_util.info(self.config.device_address)
 
-                    is_connected_prev = device_info_prev.get('is_connected')
-                    is_connected = self.device_info.get('is_connected')
-                    if is_connected != is_connected_prev:
-                        self.is_connected = is_connected
-                        self.callback_connect_status_changed(is_connected, is_connected_prev)
+                is_connected_prev = device_info_prev.get('is_connected')
+                is_connected = self.device_info.get('is_connected')
+                if is_connected != is_connected_prev:
+                    self.is_connected = is_connected
+                    self.callback_connect_status_changed(is_connected, is_connected_prev)
 
-                    signal_value_prev = device_info_prev.get('signal_value')
-                    signal_value = self.device_info.get('signal_value')
-                    if signal_value != signal_value_prev:
-                        self.signal_value = signal_value
-                        self.callback_signal_value_changed(signal_value, signal_value_prev)
+                signal_value_prev = device_info_prev.get('signal_value')
+                signal_value = self.device_info.get('signal_value')
+                if signal_value != signal_value_prev:
+                    self.signal_value = signal_value
+                    self.callback_signal_value_changed(signal_value, signal_value_prev)
 
-                    if not self.disable_near_unlock and self.is_locked:
-                        is_idle = self.idle_time >= Const.idle_time
-                        is_wake = self.is_wake
-                        is_weak_signal = signal_value is None or signal_value <= self.config.weak_signal_value
-                        if not self.lid_stat and (is_wake or not is_idle) and not is_weak_signal:
-                            if is_wake and self.unlock_count > Const.unlock_count_limit:
-                                self.unlock_count = 0
+                if not self.disable_near_unlock and self.is_locked:
+                    is_idle = self.idle_time >= Const.idle_time
+                    is_wake = self.is_wake
+                    is_weak_signal = signal_value is None or signal_value <= self.config.weak_signal_value
+                    if not self.lid_stat and (is_wake or not is_idle) and not is_weak_signal:
+                        if is_wake and self.unlock_count > Const.unlock_count_limit:
+                            self.unlock_count = 0
 
-                            need_unlock = self.lock_by_app or not self.lock_by_user
-                            if is_wake or (need_unlock and self.unlock_count <= Const.unlock_count_limit + 1):
-                                if not system_api.check_display_sleep():
-                                    self.unlock()
-                                    if self.unlock_count > Const.unlock_count_limit:
-                                        self.reset_wake()
-        except:
-            self.callback_exception()
+                        need_unlock = self.lock_by_app or not self.lock_by_user
+                        if is_wake or (need_unlock and self.unlock_count <= Const.unlock_count_limit + 1):
+                            if not system_api.check_display_sleep():
+                                self.unlock()
+                                if self.unlock_count > Const.unlock_count_limit:
+                                    self.reset_wake()
 
     def callback_idle_time_changed(self, idle_time: float, idle_time_prev: float = None):
         if idle_time_prev is not None:
@@ -462,9 +459,12 @@ class Application(ApplicationBase, ApplicationView):
         threading.Thread(target=self.thread_monitor).start()
 
         def t_refresh():
-            while True:
-                self.callback_refresh()
-                time.sleep(1)
+            try:
+                while True:
+                    self.callback_refresh()
+                    time.sleep(1)
+            except:
+                self.callback_exception()
 
         threading.Thread(target=t_refresh).start()
         rumps.Timer(self.callback_refresh_view, 1).start()
