@@ -1,7 +1,8 @@
 import json
 import os
 
-from app.util import pyinstaller, object_convert, log
+from app.util import pyinstaller, object_convert
+from app.util.log import Log
 from tools.translate import Translator
 from .english import English
 

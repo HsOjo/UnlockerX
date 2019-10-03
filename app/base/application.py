@@ -166,8 +166,9 @@ class ApplicationBase:
         except:
             self.callback_exception()
 
-    def callback_exception(self):
-        exc = common.get_exception()
+    def callback_exception(self, exc=None):
+        if exc is None:
+            exc = common.get_exception()
         Log.append(self.callback_exception, 'Error', exc)
         if 'KeyboardInterrupt' in exc:
             self.quit()
@@ -179,8 +180,21 @@ class ApplicationBase:
         return osa_api.dialog_select(title, description, [self.lang.ok])
 
     def run(self):
+        self.hook_exception()
         self.app.icon = '%s/app/res/icon.png' % pyinstaller.get_runtime_dir()
         self.app.run()
+
+    def hook_exception(self):
+        def boom(type, value, tb):
+            from io import StringIO
+            from app.util import io_helper
+            import traceback
+            with StringIO() as io:
+                traceback.print_exception(type, value, tb, file=io)
+                exc = io_helper.read_all(io)
+            self.callback_exception(exc)
+
+        sys.excepthook = boom
 
     def quit(self):
         rumps.quit_application()
