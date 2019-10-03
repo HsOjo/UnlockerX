@@ -46,7 +46,7 @@ class TranslateLanguage(English):
             text = replace(text)
             text = t.translate(self._translate_from, self._translate_to, text)
             text = replace(text)
-            log.append(self.translate, 'Translate', '\n%s\n%s' % (_text, text))
+            Log.append(self.translate, 'Translate', '\n%s\n%s' % (_text, text))
             return text
 
         for k in dir(self._translate_by):

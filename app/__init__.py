@@ -7,6 +7,7 @@ import rumps
 from app import common
 from app.lib.blueutil import BlueUtil
 from app.util import pyinstaller
+from app.util.log import Log
 from .base.application import ApplicationBase
 from .config import Config
 from .res.const import Const
@@ -158,7 +159,7 @@ class Application(ApplicationBase, ApplicationView):
         self.menu_use_screen_saver_replace_lock.state = self.config.use_screen_saver_replace_lock
 
     def lock_now(self, by_app=True):
-        log.append(self.lock_now, 'Info', dict(
+        Log.append(self.lock_now, 'Info', dict(
             is_locked=self.is_locked,
             is_lid_wake=self.is_lid_wake,
             is_idle_wake=self.is_idle_wake,
@@ -174,7 +175,7 @@ class Application(ApplicationBase, ApplicationView):
                 system_api.sleep(True)
 
     def lock_delay(self, wait):
-        log.append(self.lock_delay, 'Info', wait)
+        Log.append(self.lock_delay, 'Info', wait)
         if self.is_locked or self.lid_stat:
             return
 
@@ -217,7 +218,7 @@ class Application(ApplicationBase, ApplicationView):
                 self.hint_set_password = False
                 rumps.notification(self.lang.title_info, '', self.lang.noti_password_need)
 
-        log.append(self.unlock, 'Info', dict(
+        Log.append(self.unlock, 'Info', dict(
             unlock_count=self.unlock_count,
             is_lid_wake=self.is_lid_wake,
             is_idle_wake=self.is_idle_wake,
@@ -317,7 +318,7 @@ class Application(ApplicationBase, ApplicationView):
     def callback_signal_weak(self, status: bool, status_prev: bool = None):
         params = locals()
 
-        log.append(self.callback_signal_weak, 'Info',
+        Log.append(self.callback_signal_weak, 'Info',
                    'from "%s" to "%s", signal value: %s' % (status_prev, status, self.signal_value))
 
         self.app.icon = '%s/app/res/%s' % (
@@ -333,7 +334,7 @@ class Application(ApplicationBase, ApplicationView):
     def callback_connect_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
 
-        log.append(self.callback_connect_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
+        Log.append(self.callback_connect_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
 
         self.app.icon = '%s/app/res/%s' % (
             pyinstaller.get_runtime_dir(), 'icon.png' if status else 'icon_disconnect.png')
@@ -352,7 +353,7 @@ class Application(ApplicationBase, ApplicationView):
     def callback_lid_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
 
-        log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
+        Log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         if status and not status_prev:
             self.is_lid_wake = True
 
@@ -368,7 +369,7 @@ class Application(ApplicationBase, ApplicationView):
             if self.idle_time < Const.idle_time_short and not self.lock_by_app:
                 self.lock_by_user = True
 
-        log.append(self.callback_lock_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status), dict(
+        Log.append(self.callback_lock_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status), dict(
             lock_by_user=self.lock_by_user,
             unlock_by_user=self.unlock_by_user,
             is_locked=self.is_locked,

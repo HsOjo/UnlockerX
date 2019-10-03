@@ -1,5 +1,5 @@
 from app import common
-from app.util import log
+from app.util.log import Log
 
 
 class ObjectConvertor:
@@ -49,5 +49,5 @@ class AppleScript:
     @staticmethod
     def exec(code: str, timeout=None):
         stat, out, err = common.execute('/usr/bin/osascript', code, timeout)
-        log.append(AppleScript.exec, 'AppleScript', locals())
+        Log.append(AppleScript.exec, 'AppleScript', locals())
         return stat, out, err

@@ -8,12 +8,13 @@ from app import common
 from app.res.const import Const
 from app.res.language import LANGUAGES, load_language
 from app.res.language.english import English
-from app.util import system_api, osa_api, pyinstaller, log, github, object_convert
+from app.util import system_api, osa_api, pyinstaller, github, object_convert
+from app.util.log import Log
 
 
 class ApplicationBase:
     def __init__(self, config_class):
-        log.append('app_init', 'Info', 'version: %s' % Const.version, system_api.get_system_version())
+        Log.append('app_init', 'Info', 'version: %s' % Const.version, system_api.get_system_version())
         self.app = rumps.App(Const.app_name, quit_button=None)
 
         self.config = config_class()
@@ -159,7 +160,7 @@ class ApplicationBase:
 
     def callback_menu(self, name):
         try:
-            log.append(self.callback_menu, 'Info', 'Click %s.' % name)
+            Log.append(self.callback_menu, 'Info', 'Click %s.' % name)
             menu = self.menu[name]
             menu['callback'](menu['object'])
         except:
@@ -167,12 +168,12 @@ class ApplicationBase:
 
     def callback_exception(self):
         exc = common.get_exception()
-        log.append(self.callback_exception, 'Error', exc)
+        Log.append(self.callback_exception, 'Error', exc)
         if 'KeyboardInterrupt' in exc:
             self.quit()
         if osa_api.alert(self.lang.title_crash, self.lang.description_crash):
             self.export_log()
-            self.restart()
+        self.restart()
 
     def message_box(self, title, description):
         return osa_api.dialog_select(title, description, [self.lang.ok])
@@ -202,11 +203,8 @@ class ApplicationBase:
     def export_log(self):
         folder = osa_api.choose_folder(self.lang.menu_export_log)
         if folder is not None:
-            log_str = log.extract_log()
-            err_str = log.extract_err()
-
-            log_str = self.config.clean_text(log_str)
-            err_str = self.config.clean_text(err_str)
+            log_str = Log.extract_log()
+            err_str = Log.extract_err()
 
             if log_str != '':
                 with open('%s/%s' % (folder, '%s.log' % Const.app_name), 'w') as io:
@@ -245,7 +243,7 @@ class ApplicationBase:
     def check_update(self, by_user=False, test=False):
         try:
             release = github.get_latest_release(Const.author, Const.app_name, timeout=5)
-            log.append(self.check_update, 'Info', release)
+            Log.append(self.check_update, 'Info', release)
 
             have_new = test or common.compare_version(Const.version, release['tag_name'])
 
@@ -266,7 +264,7 @@ class ApplicationBase:
                     rumps.notification(self.lang.menu_check_update, self.lang.noti_update_none,
                                        self.lang.noti_update_star)
         except:
-            log.append(self.check_update, 'Warning', common.get_exception())
+            Log.append(self.check_update, 'Warning', common.get_exception())
             if by_user:
                 rumps.notification(self.lang.menu_check_update, '', self.lang.noti_network_error)
 
@@ -318,7 +316,7 @@ class ApplicationBase:
                 [stat, out, err] = common.execute(
                     path_event, env={Const.app_env: object_convert.to_json(params)}, sys_env=False,
                     timeout=self.config.process_timeout)
-                log.append(source, 'Event',
+                Log.append(source, 'Event',
                            {'path': path_event, 'status': stat, 'output': out, 'error': err})
 
             threading.Thread(target=t_event_execute).start()
