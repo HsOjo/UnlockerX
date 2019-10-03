@@ -264,17 +264,17 @@ class Application(ApplicationBase, ApplicationView):
                 device_info_prev = self.device_info
                 self.device_info = self.blue_util.info(self.config.device_address)
 
-                is_connected_prev = device_info_prev.get('is_connected')
-                is_connected = self.device_info.get('is_connected')
-                if is_connected != is_connected_prev:
-                    self.is_connected = is_connected
-                    self.callback_connect_status_changed(is_connected, is_connected_prev)
-
                 signal_value_prev = device_info_prev.get('signal_value')
                 signal_value = self.device_info.get('signal_value')
                 if signal_value != signal_value_prev:
                     self.signal_value = signal_value
                     self.callback_signal_value_changed(signal_value, signal_value_prev)
+
+                is_connected_prev = device_info_prev.get('is_connected')
+                is_connected = self.device_info.get('is_connected')
+                if is_connected != is_connected_prev:
+                    self.is_connected = is_connected
+                    self.callback_connect_status_changed(is_connected, is_connected_prev)
 
                 if not self.disable_near_unlock and self.is_locked:
                     is_idle = self.idle_time >= Const.idle_time
@@ -339,8 +339,13 @@ class Application(ApplicationBase, ApplicationView):
             pyinstaller.get_runtime_dir(), 'icon.png' if status else 'icon_disconnect.png')
 
         if status_prev is not None and not status:
+            # disconnect.
             if not self.is_weak and self.lock_time is None:
                 self.lock_delay(self.config.disconnect_lock_delay)
+        elif not status_prev and status:
+            # reconnect.
+            if not self.is_weak:
+                self.lock_delay(None)
 
         self.event_trigger(self.callback_connect_status_changed, params, self.config.event_connect_status_changed)
 
