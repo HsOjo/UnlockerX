@@ -17,7 +17,7 @@ Near unlock your Mac by Bluetooth device!
 
 Base on above contents, You can free to extend this program. (example code on folder "/docs/".)
 
-This program can work normally in macOS 10.14. (Tested on MacBook Pro 2019)
+This program can work normally in macOS **10.14/10.15**. (Tested on MacBook Pro 2019)
 
 ![Thumbnail](docs/img/thumbnail_en.png)
 

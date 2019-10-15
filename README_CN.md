@@ -17,7 +17,7 @@
 
 基于以上内容，你可以自由地扩展这个程序。（示例代码在 "/docs" 目录下）
 
-这个程序可以在macOS 10.14正常运行。（在2019款MacBook Pro中测试正常）
+这个程序可以在macOS **10.14/10.15**正常运行。（在2019款MacBook Pro中测试正常）
 
 ![Thumbnail](docs/img/thumbnail_cn.png)
 

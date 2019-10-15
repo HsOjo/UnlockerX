@@ -419,7 +419,8 @@ class Application(ApplicationBase, ApplicationView):
                 if not self.disable_leave_lock:
                     if lock_time is not None and time.time() > lock_time:
                         if self.signal_value is None or self.signal_value <= self.config.weak_signal_value:
-                            self.lock_now()
+                            if not self.is_locked:
+                                self.lock_now()
 
                 if self.config.device_address is not None:
                     if not self.is_connected:
