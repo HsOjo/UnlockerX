@@ -67,7 +67,7 @@ class Log:
             item_str = str(item)
             if len(Log.replaces) > 0:
                 for k, v in Log.replaces.items():
-                    if k is not None:
+                    if k is not None and k != '':
                         item_str = item_str.replace(k, v)
 
             items_str.append(item_str)

@@ -12,7 +12,8 @@ datas = {}
 
 
 def add_data(src, dest):
-    datas[src] = dest
+    if os.path.exists(src):
+        datas[src] = dest
 
 
 # build translate language data.

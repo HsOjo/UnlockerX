@@ -1,5 +1,5 @@
+import time
 from hashlib import md5
-from time import sleep
 from traceback import print_exc
 
 import requests
@@ -40,7 +40,7 @@ class BaiduTranslate(Translator):
                 result = resp.json()['trans_result'][0]['dst']
                 break
             except Exception as e:
-                sleep(1)
+                time.sleep(1)
 
         return result
 
