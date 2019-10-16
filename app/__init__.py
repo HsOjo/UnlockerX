@@ -280,8 +280,7 @@ class Application(ApplicationBase, ApplicationView):
                 if not self.disable_near_unlock and self.is_locked:
                     is_idle = self.idle_time >= Const.idle_time
                     is_wake = self.is_wake
-                    is_weak_signal = signal_value is None or signal_value <= self.config.weak_signal_value
-                    if not self.lid_stat and (is_wake or not is_idle) and not is_weak_signal:
+                    if not self.lid_stat and (is_wake or not is_idle) and not self.is_weak:
                         if is_wake and self.unlock_count > Const.unlock_count_limit:
                             self.unlock_count = 0
 
@@ -314,6 +313,8 @@ class Application(ApplicationBase, ApplicationView):
                 self.callback_signal_weak(is_weak, is_weak_prev)
             elif is_increase and is_weak_prev and not is_weak:
                 self.callback_signal_weak(is_weak, is_weak_prev)
+        else:
+            self.is_weak = True
 
     def callback_signal_weak(self, status: bool, status_prev: bool = None):
         params = locals()
@@ -417,10 +418,9 @@ class Application(ApplicationBase, ApplicationView):
                     lock_time = self.lock_time
 
                 if not self.disable_leave_lock:
-                    if lock_time is not None and time.time() > lock_time:
-                        if self.signal_value is None or self.signal_value <= self.config.weak_signal_value:
-                            if not self.is_locked:
-                                self.lock_now()
+                    if lock_time is not None and time.time() >= lock_time:
+                        if self.is_weak and not self.is_locked:
+                            self.lock_now()
 
                 if self.config.device_address is not None:
                     if not self.is_connected:
