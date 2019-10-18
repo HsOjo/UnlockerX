@@ -423,7 +423,7 @@ class Application(ApplicationBase, ApplicationView):
                             self.lock_now()
 
                 if self.config.device_address is not None:
-                    if not self.is_connected and not self.lid_stat:
+                    if not self.is_connected and not self.lid_stat and self.idle_time < Const.idle_time:
                         self.blue_util.connect(self.config.device_address)
             except:
                 self.callback_exception()

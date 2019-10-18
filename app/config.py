@@ -9,8 +9,8 @@ class Config(ConfigBase):
     password = ''
     language = 'en'
     device_address = ''
-    weak_signal_value = -60
-    weak_signal_lock_delay = 5
+    weak_signal_value = -80
+    weak_signal_lock_delay = 6
     disconnect_lock_delay = 10
     use_screen_saver_replace_lock = True
     bluetooth_refresh_rate = 1
