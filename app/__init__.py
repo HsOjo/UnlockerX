@@ -176,7 +176,7 @@ class Application(ApplicationBase, ApplicationView):
 
     def lock_delay(self, wait):
         Log.append(self.lock_delay, 'Info', wait)
-        if self.is_locked or self.lid_stat:
+        if (self.is_locked or self.lid_stat) and wait is not None:
             return
 
         with self.t_lock:
