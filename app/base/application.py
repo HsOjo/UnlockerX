@@ -8,7 +8,8 @@ from app import common
 from app.res.const import Const
 from app.res.language import LANGUAGES, load_language
 from app.res.language.english import English
-from app.util import system_api, osa_api, pyinstaller, github, object_convert
+from app.shell import get_app_shell
+from app.util import system_api, osa_api, github, object_convert
 from app.util.log import Log
 
 
@@ -16,6 +17,13 @@ class ApplicationBase:
     def __init__(self, config_class):
         Log.append('app_init', 'Info', 'version: %s' % Const.version, system_api.get_system_version())
         self.app = rumps.App(Const.app_name, quit_button=None)
+        self.app_shell = get_app_shell()
+
+        Log.append('app_shell', 'Info', {
+            'shell_class': self.app_shell.__class__.__name__,
+            'runtime_dir': self.app_shell.get_runtime_dir(),
+            'app_path': self.app_shell.get_app_path(),
+        })
 
         self.config = config_class()
         self.config.load()
@@ -181,7 +189,7 @@ class ApplicationBase:
 
     def run(self):
         self.hook_exception()
-        self.app.icon = '%s/app/res/icon.png' % pyinstaller.get_runtime_dir()
+        self.app.icon = '%s/app/res/icon.png' % self.app_shell.get_runtime_dir()
         self.app.run()
 
     def hook_exception(self):
@@ -200,7 +208,7 @@ class ApplicationBase:
         rumps.quit_application()
 
     def restart(self):
-        [_, path] = pyinstaller.get_application_info()
+        path = self.app_shell.get_app_path()
         if path is not None:
             system_api.open_url(path, True)
         else:
@@ -309,7 +317,7 @@ class ApplicationBase:
     def set_startup(self):
         res = osa_api.alert(self.lang.menu_set_startup, self.lang.description_set_startup)
         if res:
-            osa_api.set_login_startup(*pyinstaller.get_application_info())
+            osa_api.set_login_startup(Const.app_name, self.app_shell.get_app_path())
 
     def clear_config(self, sender: rumps.MenuItem):
         if osa_api.alert(sender.title, self.lang.description_clear_config):

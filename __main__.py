@@ -1,12 +1,9 @@
-import sys
-
 from app import Application
-from app.util import pyinstaller
+from app.shell import init_app_shell
 from app.util.log import Log
 
-if getattr(sys, 'frozen', False):
-    # is run at pyinstaller
-    pyinstaller.fix_encoding_in_pyinstaller()
+app_shell = init_app_shell()
+if app_shell.check():
     Log.init_app()
 
 app = Application()

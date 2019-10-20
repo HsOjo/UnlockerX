@@ -45,28 +45,40 @@ add_data('./app/res/icon_disconnect.png', './app/res')
 add_data('./app/res/icon.png', './app/res')
 add_data('./app/lib/blueutil/blueutil', './app/lib/blueutil')
 
-data_str = ''
-for k, v in datas.items():
-    data_str += ' \\\n\t'
-    data_str += '--add-data "%s:%s"' % (k, v)
+use_py2app = '--py2app' in sys.argv
+if use_py2app:
+    Log.append('Build', 'Info', 'Py2App packing now...')
+    os.system('python setup.py py2app')
+    shutil.rmtree('./build', ignore_errors=True)
 
-Log.append('Build', 'Info', 'Pyinstaller packing now...')
-pyi_cmd = 'pyinstaller -F -w -n "%s" -i "./app/res/icon.icns" %s \\\n__main__.py' % (Const.app_name, data_str)
-print(pyi_cmd)
-os.system(pyi_cmd)
-os.unlink('./%s.spec' % Const.app_name)
-shutil.rmtree('./build', ignore_errors=True)
+    res_dir = './dist/%s.app/Contents/Resources' % Const.app_name
+    for f, fd in datas.items():
+        dd = ('%s/%s' % (res_dir, fd)).replace('/./', '/')
+        os.makedirs(dd, exist_ok=True)
+        shutil.copy(f, dd)
+else:
+    data_str = ''
+    for k, v in datas.items():
+        data_str += ' \\\n\t'
+        data_str += '--add-data "%s:%s"' % (k, v)
 
-# hide dock icon.
-INFO_FILE = './dist/%s.app/Contents/Info.plist' % Const.app_name
+    Log.append('Build', 'Info', 'Pyinstaller packing now...')
+    pyi_cmd = 'pyinstaller -F -w -n "%s" -i "./app/res/icon.icns" %s \\\n__main__.py' % (Const.app_name, data_str)
+    print(pyi_cmd)
+    os.system(pyi_cmd)
+    os.unlink('./%s.spec' % Const.app_name)
+    shutil.rmtree('./build', ignore_errors=True)
 
-with open(INFO_FILE, 'r') as io:
-    info = io.read()
+    # hide dock icon.
+    INFO_FILE = './dist/%s.app/Contents/Info.plist' % Const.app_name
 
-dict_pos = info.find('<dict>') + 7
-info = info[:dict_pos] + '\t<key>LSUIElement</key>\n\t<string>1</string>\n' + info[dict_pos:]
-with open(INFO_FILE, 'w') as io:
-    io.write(info)
+    with open(INFO_FILE, 'r') as io:
+        info = io.read()
+
+    dict_pos = info.find('<dict>') + 7
+    info = info[:dict_pos] + '\t<key>LSUIElement</key>\n\t<string>1</string>\n' + info[dict_pos:]
+    with open(INFO_FILE, 'w') as io:
+        io.write(info)
 
 Log.append('Build', 'Info', 'Packing release zip file now...')
 

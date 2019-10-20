@@ -1,7 +1,7 @@
 import json
 import os
 
-from app.util import pyinstaller, object_convert
+from app.util import object_convert
 from app.util.log import Log
 from tools.translate import Translator
 from .english import English
@@ -15,8 +15,9 @@ class TranslateLanguage(English):
     _replace_words = {}
 
     def __init__(self):
-        self._data_path = '%s/app/res/language/translate/%s.json' % (
-            pyinstaller.get_runtime_dir(), self._resource_name[self._resource_name.rfind('.') + 1:])
+        self._data_path = './app/res/language/translate/%s.json' % (
+            self._resource_name[self._resource_name.rfind('.') + 1:]
+        )
         self._translated = self.load_local_translate()
 
     def load_local_translate(self):

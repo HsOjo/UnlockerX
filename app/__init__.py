@@ -5,16 +5,15 @@ from threading import Thread
 import rumps
 
 from app import common
+from app.base.application import ApplicationBase
+from app.config import Config
 from app.lib.blueutil import BlueUtil
-from app.util import pyinstaller
+from app.res.const import Const
+from app.res.language import load_language, LANGUAGES
+from app.res.language.english import English
+from app.util import system_api, osa_api, github, object_convert, log
 from app.util.log import Log
-from .base.application import ApplicationBase
-from .config import Config
-from .res.const import Const
-from .res.language import load_language, LANGUAGES
-from .res.language.english import English
-from .util import system_api, osa_api, github, object_convert, log
-from .view.application import ApplicationView
+from app.view.application import ApplicationView
 
 
 class Application(ApplicationBase, ApplicationView):
@@ -25,7 +24,7 @@ class Application(ApplicationBase, ApplicationView):
         self.menu_cat = []
         self.init_menu()
 
-        self.blue_util = BlueUtil('%s/app/lib/blueutil/blueutil' % pyinstaller.get_runtime_dir())
+        self.blue_util = BlueUtil('%s/app/lib/blueutil/blueutil' % self.app_shell.get_runtime_dir())
 
         self.lock_time = None  # type: float
         self.idle_time = None  # type: float
@@ -323,7 +322,7 @@ class Application(ApplicationBase, ApplicationView):
                    'from "%s" to "%s", signal value: %s' % (status_prev, status, self.signal_value))
 
         self.app.icon = '%s/app/res/%s' % (
-            pyinstaller.get_runtime_dir(), 'icon_weak_signal.png' if status else 'icon.png')
+            self.app_shell.get_runtime_dir(), 'icon_weak_signal.png' if status else 'icon.png')
 
         if status:
             self.lock_delay(self.config.weak_signal_lock_delay)
@@ -338,7 +337,7 @@ class Application(ApplicationBase, ApplicationView):
         Log.append(self.callback_connect_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
 
         self.app.icon = '%s/app/res/%s' % (
-            pyinstaller.get_runtime_dir(), 'icon.png' if status else 'icon_disconnect.png')
+            self.app_shell.get_runtime_dir(), 'icon.png' if status else 'icon_disconnect.png')
 
         if status_prev is not None and not status:
             # disconnect.
@@ -423,7 +422,8 @@ class Application(ApplicationBase, ApplicationView):
                             self.lock_now()
 
                 if self.config.device_address is not None:
-                    if not self.is_connected and not self.lid_stat and (self.idle_time < Const.idle_time or self.is_wake):
+                    if not self.is_connected and not self.lid_stat and (
+                            self.idle_time < Const.idle_time or self.is_wake):
                         self.blue_util.connect(self.config.device_address)
             except:
                 self.callback_exception()

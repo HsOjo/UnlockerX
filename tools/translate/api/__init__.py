@@ -1,13 +1,12 @@
 import json
 import os
 
-from app.util import pyinstaller
 from .baidu import BaiduTranslate
 from .google import GoogleTranslate
 from .translator import Translator
 from .zhconv import ZHConv
 
-CONFIG_FILE = '%s/tools/translate/config.json' % pyinstaller.get_runtime_dir()
+CONFIG_FILE = './tools/translate/config.json'
 
 config = {}
 if os.path.exists(CONFIG_FILE):
