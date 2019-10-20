@@ -1,6 +1,6 @@
-from .shell import Shell
 from .py2app import Py2App
 from .pyinstaller import PyInstaller
+from .shell import Shell
 
 app_shell: Shell
 
