@@ -36,7 +36,7 @@ pip3 install -r requirements.txt
 * 构建
 
 ```bash
-python3 build.py
+python3 build.py [--translate-baidu] [--py2app]
 ```
 
 
