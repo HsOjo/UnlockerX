@@ -5,25 +5,13 @@ class BlueUtil:
     def __init__(self, path):
         self.path = path
 
-    @property
-    def power(self):
-        content = common.execute_get_out('%s --power' % self.path)
-        return bool(int(content))
+    def _exec_out(self, *args):
+        return common.execute_get_out([self.path, *args], shell=False)
 
-    @power.setter
-    def power(self, power: bool):
-        common.execute('%s --power %s' % (self.path, int(power)))
+    def _exec(self, *args):
+        return common.execute([self.path, *args], shell=False)
 
-    @property
-    def discoverable(self):
-        content = common.execute_get_out('%s --discoverable' % self.path)
-        return bool(int(content))
-
-    @discoverable.setter
-    def discoverable(self, discoverable: bool):
-        common.execute('%s --discoverable %s' % (self.path, int(discoverable)))
-
-    def convert_device(self, content):
+    def _convert_device(self, content):
         cols = content.split(',')
 
         item = {}
@@ -50,39 +38,57 @@ class BlueUtil:
 
         return item
 
-    def convert_devices(self, content: str):
+    def _convert_devices(self, content: str):
         result = []
         for line in content.split('\n'):
             if line.strip() != '':
-                result.append(self.convert_device(line))
+                result.append(self._convert_device(line))
 
         return result
 
+    @property
+    def power(self):
+        content = self._exec_out('--power')
+        return bool(int(content))
+
+    @power.setter
+    def power(self, power: bool):
+        self._exec_out('--power', str(int(power)))
+
+    @property
+    def discoverable(self):
+        content = self._exec_out('--discoverable')
+        return bool(int(content))
+
+    @discoverable.setter
+    def discoverable(self, discoverable: bool):
+        self._exec_out('--discoverable', str(int(discoverable)))
+
     def inquiry(self, time=10):
-        return self.convert_devices(common.execute_get_out('%s --inquiry %s' % (self.path, time)))
+        return self._convert_devices(self._exec_out('--inquiry', str(int(time))))
 
     def recent(self, num=10):
-        return self.convert_devices(common.execute_get_out('%s --recent %s' % (self.path, num)))
+        return self._convert_devices(self._exec_out('--recent', str(int(num))))
 
     @property
     def favourites(self):
-        return self.convert_devices(common.execute_get_out('%s --favourites' % (self.path)))
+        return self._convert_devices(self._exec_out('--favourites'))
 
     @property
     def paired(self):
-        return self.convert_devices(common.execute_get_out('%s --paired' % (self.path)))
+        return self._convert_devices(self._exec_out('--paired'))
 
     def info(self, dev_id: str):
-        return self.convert_device(common.execute_get_out('%s --info %s' % (self.path, dev_id)))
+        return self._convert_device(self._exec_out('--info', dev_id))
 
     def is_connected(self, dev_id: str):
-        content = common.execute_get_out('%s --is-connected %s' % (self.path, dev_id))
+        content = self._exec_out('--is-connected', dev_id)
         return bool(int(content))
 
     def connect(self, dev_id: str):
-        stat, out, err = common.execute('%s --connect %s' % (self.path, dev_id))
+        stat, out, err = self._exec('--connect', dev_id)
         return stat == 0
 
     def pair(self, dev_id: str, pin=''):
-        stat, out, err = common.execute('%s --pair %s %s' % (self.path, dev_id, pin))
+        stat, out, err = self._exec('--pair', dev_id, pin)
         return stat == 0
