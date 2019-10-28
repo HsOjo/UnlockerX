@@ -1,4 +1,3 @@
-import os
 import re
 
 from app import common
@@ -8,20 +7,30 @@ from app.util.log import Log
 _cg_session_info = None
 
 
-def open_url(url, new=False, wait=False, bundle=None):
-    param = ''
-    param += ' -n' if new else ''
-    param += ' -W' if wait else ''
-    param += ' -b %s' % bundle if bundle is not None else ''
-    os.system('/usr/bin/open%s "%s"' % (param, url))
+def open_url(url, new=False, wait=False, bundle: str = None):
+    args = ['/usr/bin/open']
+    if new:
+        args.append('-n')
+    if wait:
+        args.append('-W')
+    if bundle:
+        args.append('-b')
+        args.append(bundle)
+
+    args.append(url)
+    return common.execute(args)
 
 
 def open_preference(name, **kwargs):
     open_url('/System/Library/PreferencePanes/%s.prefPane' % name, bundle='com.apple.systempreferences', **kwargs)
 
 
-def check_admin(username=''):
-    content = common.execute_get_out(['/usr/bin/groups', username])
+def check_admin(username=None):
+    args = ['/usr/bin/groups']
+    if username is not None:
+        args.append(username)
+
+    content = common.execute_get_out(args)
     groups = content.split(' ')
 
     return 'admin' in groups
