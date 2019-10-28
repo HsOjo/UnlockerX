@@ -5,6 +5,8 @@ from app import common
 from app.util import object_convert
 from app.util.log import Log
 
+_cg_session_info = None
+
 
 def open_url(url, new=False, wait=False, bundle=None):
     param = ''
@@ -19,20 +21,20 @@ def open_preference(name, **kwargs):
 
 
 def check_admin(username=''):
-    content = common.execute_get_out('/usr/bin/groups %s' % username)
+    content = common.execute_get_out(['/usr/bin/groups', username])
     groups = content.split(' ')
 
     return 'admin' in groups
 
 
 def sudo(command: str, password: str, timeout=None):
-    stat, out, err = common.execute('/usr/bin/sudo -S %s' % (command), '%s\n' % password, timeout)
+    stat, out, err = common.execute('/usr/bin/sudo -S %s' % (command), '%s\n' % password, timeout, shell=True)
     Log.append(sudo, 'sudo', locals())
     return stat, out, err
 
 
 def get_system_version():
-    content = common.execute_get_out('/usr/sbin/system_profiler SPSoftwareDataType')
+    content = common.execute_get_out(['/usr/sbin/system_profiler', 'SPSoftwareDataType'])
     result = {}
     reg = re.compile('(.*): (.*)')
     for item in reg.findall(content):
@@ -48,16 +50,19 @@ def cg_session_info_py2():
 
 
 def cg_session_info():
-    import Quartz
-    return getattr(Quartz, 'CGSessionCopyCurrentDictionary')()
+    global _cg_session_info
+    if _cg_session_info is None:
+        import Quartz
+        _cg_session_info = getattr(Quartz, 'CGSessionCopyCurrentDictionary')
+    return _cg_session_info()
 
 
 def sleep(display_only=False):
-    os.system('/usr/bin/pmset %s' % ('displaysleepnow' if display_only else 'sleepnow'))
+    common.execute(['/usr/bin/pmset', 'displaysleepnow' if display_only else 'sleepnow'])
 
 
 def check_lid():
-    content = common.execute_get_out('/usr/sbin/ioreg -c IOPMrootDomain -d 4')
+    content = common.execute_get_out(['/usr/sbin/ioreg', '-c', 'IOPMrootDomain', '-d', '4'])
 
     reg = re.compile(r'"AppleClamshellState" = (\S+)')
     result = common.reg_find_one(reg, content, None)
@@ -71,7 +76,7 @@ def check_lid():
 
 
 def get_hid_idle_time():
-    content = common.execute_get_out('/usr/sbin/ioreg -c IOHIDSystem -d 4')
+    content = common.execute_get_out(['/usr/sbin/ioreg', '-c', 'IOHIDSystem', '-d', '4'])
 
     reg = re.compile(r'"HIDIdleTime" = (\d+)')
     result = common.reg_find_one(reg, content, None)
@@ -80,7 +85,7 @@ def get_hid_idle_time():
 
 
 def check_display_sleep():
-    content = common.execute_get_out('/usr/sbin/ioreg -n AppleBacklightDisplay -d 9')
+    content = common.execute_get_out(['/usr/sbin/ioreg', '-n', 'AppleBacklightDisplay', '-d', '9'])
 
     reg = re.compile(r'"dsyp"={"min"=(\d+),"max"=(\d+),"value"=(\d+)}')
     [min_, max_, value] = common.reg_find_one(reg, content, None)

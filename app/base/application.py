@@ -339,7 +339,7 @@ class ApplicationBase:
             def t_event_execute():
                 [stat, out, err] = common.execute(
                     path_event, env={Const.app_env: object_convert.to_json(params)}, sys_env=False,
-                    timeout=self.config.process_timeout)
+                    timeout=self.config.process_timeout, shell=True)
                 Log.append(source, 'Event',
                            {'path': path_event, 'status': stat, 'output': out, 'error': err})
 

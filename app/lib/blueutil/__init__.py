@@ -6,10 +6,10 @@ class BlueUtil:
         self.path = path
 
     def _exec_out(self, *args):
-        return common.execute_get_out([self.path, *args], shell=False)
+        return common.execute_get_out([self.path, *args])
 
     def _exec(self, *args):
-        return common.execute([self.path, *args], shell=False)
+        return common.execute([self.path, *args])
 
     def _convert_device(self, content):
         cols = content.split(',')
