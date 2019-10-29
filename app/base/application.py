@@ -15,12 +15,12 @@ from app.util.log import Log
 
 class ApplicationBase:
     def __init__(self, config_class):
-        Log.append('app_init', 'Info', 'version: %s' % Const.version, system_api.get_system_version())
         self.app = rumps.App(Const.app_name, quit_button=None)
         self.app_shell = init_app_shell()
         if self.app_shell.check():
             Log.init_app()
 
+        Log.append('app_init', 'Info', 'version: %s' % Const.version, system_api.get_system_version())
         Log.append('app_shell', 'Info', {
             'shell_class': self.app_shell.__class__.__name__,
             'runtime_dir': self.app_shell.get_runtime_dir(),
