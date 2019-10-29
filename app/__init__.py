@@ -286,7 +286,8 @@ class Application(ApplicationBase, ApplicationView):
                         need_unlock = self.lock_by_app or not self.lock_by_user
                         if is_wake or (need_unlock and self.unlock_count <= Const.unlock_count_limit + 1):
                             if not system_api.check_display_sleep():
-                                self.unlock()
+                                if not self.unlock():
+                                    time.sleep(1)
                                 if self.unlock_count > Const.unlock_count_limit:
                                     self.reset_wake()
 
@@ -341,7 +342,7 @@ class Application(ApplicationBase, ApplicationView):
 
         if status_prev is not None and not status:
             # disconnect.
-            if not self.is_weak and self.lock_time is None:
+            if self.lock_time is None:
                 self.lock_delay(self.config.disconnect_lock_delay)
         elif not status_prev and status:
             # reconnect.

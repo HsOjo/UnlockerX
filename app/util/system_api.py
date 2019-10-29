@@ -1,7 +1,6 @@
 import re
 
 from app import common
-from app.util import object_convert
 from app.util.log import Log
 
 _cg_session_info = None
@@ -49,13 +48,6 @@ def get_system_version():
     for item in reg.findall(content):
         result[item[0].strip()] = item[1].strip()
     return result
-
-
-def cg_session_info_py2():
-    code = 'import Quartz, json; print(json.dumps(dict(Quartz.CGSessionCopyCurrentDictionary())));'
-    [stat, out, err] = common.execute('/usr/bin/python', code)
-    content = object_convert.from_json(out)  # type: dict
-    return content
 
 
 def cg_session_info():
