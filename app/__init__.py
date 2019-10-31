@@ -29,6 +29,7 @@ class Application(ApplicationBase, ApplicationView):
         self.lock_time = None  # type: float
         self.idle_time = None  # type: float
         self.lid_stat = None  # type: bool
+        self.display_sleep_stat = None  # type: bool
         self.signal_value = None  # type: int
 
         self.is_locked = False
@@ -256,6 +257,11 @@ class Application(ApplicationBase, ApplicationView):
             self.idle_time = idle_time
             self.callback_idle_time_changed(idle_time, idle_time_prev)
 
+        display_sleep_stat_prev = self.display_sleep_stat
+        display_sleep_stat = system_api.check_display_sleep()
+        if display_sleep_stat != display_sleep_stat_prev:
+            self.display_sleep_stat = display_sleep_stat
+
         self.refresh_cg_session_info()
 
         if self.config.device_address is not None:
@@ -285,7 +291,7 @@ class Application(ApplicationBase, ApplicationView):
 
                         need_unlock = self.lock_by_app or not self.lock_by_user
                         if is_wake or (need_unlock and self.unlock_count <= Const.unlock_count_limit + 1):
-                            if not system_api.check_display_sleep():
+                            if not display_sleep_stat:
                                 if not self.unlock():
                                     time.sleep(1)
                                 if self.unlock_count > Const.unlock_count_limit:
@@ -405,12 +411,13 @@ class Application(ApplicationBase, ApplicationView):
         self.is_idle_wake = False
 
     def thread_monitor(self):
+        interval = 0.8
         while True:
             last_time = time.time()
-            time.sleep(0.5)
+            time.sleep(interval)
             try:
                 # check sleep
-                if time.time() - last_time > 1:
+                if time.time() - last_time > interval * 2:
                     self.is_sleep_wake = True
 
                 # get lock time
@@ -424,7 +431,7 @@ class Application(ApplicationBase, ApplicationView):
 
                 if self.config.device_address is not None:
                     if not self.is_connected and not self.lid_stat and (
-                            self.idle_time < Const.idle_time or self.is_wake):
+                            not self.display_sleep_stat or self.idle_time < Const.idle_time or self.is_wake):
                         self.blue_util.connect(self.config.device_address)
             except:
                 self.callback_exception()
