@@ -7,5 +7,5 @@ class Const:
     releases_url = '%s/releases' % github_page
     protector = '[protector]'
     idle_time = 30
-    idle_time_short = 3
-    unlock_count_limit = 2
+    idle_time_short = 1
+    unlock_count_limit = 3

@@ -293,7 +293,7 @@ class Application(ApplicationBase, ApplicationView):
                         if is_wake or (need_unlock and self.unlock_count <= Const.unlock_count_limit + 1):
                             if not display_sleep_stat:
                                 if not self.unlock():
-                                    time.sleep(1)
+                                    time.sleep(3)
                                 if self.unlock_count > Const.unlock_count_limit:
                                     self.reset_wake()
 
