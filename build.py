@@ -7,6 +7,7 @@ from app.res.const import Const
 from app.res.language import load_language, LANGUAGES
 from app.res.language.translate_language import TranslateLanguage
 from tools.translate import *
+from tools.utils.zip import zip_directory
 
 datas = {}
 
@@ -45,17 +46,31 @@ add_data('./app/res/icon_disconnect.png', './app/res')
 add_data('./app/res/icon.png', './app/res')
 add_data('./app/lib/blueutil/blueutil', './app/lib/blueutil')
 
+path_app_dir = './dist/%s.app' % Const.app_name
+path_app_zip = './dist/%s-%s.zip' % (Const.app_name, Const.version)
+
 use_py2app = '--py2app' in sys.argv
 if use_py2app:
     Log.append('Build', 'Info', 'Py2App packing now...')
     os.system('python setup.py py2app')
     shutil.rmtree('./build', ignore_errors=True)
 
-    res_dir = './dist/%s.app/Contents/Resources' % Const.app_name
+    res_dir = '%s/Contents/Resources' % path_app_dir
     for f, fd in datas.items():
         dd = ('%s/%s' % (res_dir, fd)).replace('/./', '/')
         os.makedirs(dd, exist_ok=True)
         shutil.copy(f, dd)
+
+    # clean not .pyc files.
+    Log.append('Build', 'Info', 'Cleaning...')
+    lib_dir = '%s/lib' % res_dir
+    [lib_file] = [f for f in os.listdir(lib_dir) if 'python' in f and '.zip' in f]
+    lib_path = '%s/%s' % (lib_dir, lib_file)
+    with ZipFile(lib_path, 'r') as zf:
+        zf.extractall(lib_file)
+
+    zip_directory(lib_file, lib_path, filter_='.*\.pyc$', remove='.*__pycache__.*')
+    shutil.rmtree(lib_file)
 else:
     data_str = ''
     for k, v in datas.items():
@@ -80,16 +95,7 @@ else:
     with open(INFO_FILE, 'w') as io:
         io.write(info)
 
-Log.append('Build', 'Info', 'Packing release zip file now...')
-
 # pack release zip file.
-zf = ZipFile('./dist/%s-%s.zip' % (Const.app_name, Const.version), 'w')
-src_dir = './dist/%s.app' % Const.app_name
-for d, ds, fs in os.walk(src_dir):
-    for f in fs:
-        path = os.path.join(d, f)
-        z_path = path[7:].strip(os.path.sep)
-        zf.write(path, z_path)
-zf.close()
-
+Log.append('Build', 'Info', 'Packing release zip file now...')
+zip_directory(path_app_dir, path_app_zip, remove='.*__pycache__.*', dirname=True)
 Log.append('Build', 'Info', 'Build finish.')
