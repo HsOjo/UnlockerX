@@ -89,6 +89,9 @@ def check_display_sleep():
     content = common.execute_get_out(['/usr/sbin/ioreg', '-n', 'AppleBacklightDisplay', '-d', '9'])
 
     reg = re.compile(r'"dsyp"={"min"=(\d+),"max"=(\d+),"value"=(\d+)}')
-    [min_, max_, value] = common.reg_find_one(reg, content, None)
-
-    return min_ == value
+    result = common.reg_find_one(reg, content, None)
+    if result is not None:
+        [min_, max_, value] = result
+        return min_ == value
+    else:
+        return False
