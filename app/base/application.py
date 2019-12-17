@@ -38,7 +38,7 @@ class ApplicationBase:
         self.is_admin = system_api.check_admin()
         threading.Thread(target=self.check_update, args=(False,)).start()
 
-    def add_menu(self, name, title='', callback=None, parent=None):
+    def add_menu(self, name, title=None, callback=None, parent=None):
         if parent is None:
             parent = self.app.menu
 
@@ -52,9 +52,11 @@ class ApplicationBase:
                 menu = rumps.MenuItem(name)
                 parent.add(menu)
 
-            menu.title = title if title != '' else str(name)
+            if title is None:
+                title = str(name)
 
-            item = {'object': menu, 'name': name, 'callback': None, 'parent': parent}
+            menu.title = title
+            item = {'object': menu, 'name': name, 'callback': None, 'parent': parent, 'title': title}
             self.menu[name] = item
             self.menu[id(menu)] = item
             self.set_menu_callback(name, callback)
@@ -70,7 +72,9 @@ class ApplicationBase:
 
     def set_menu_title(self, name, title):
         menu = self.app.menu[name]  # type: rumps.MenuItem
-        if menu.title != title:
+        item = self.menu[id(menu)]
+        if item['title'] != title:
+            item['title'] = title
             menu.title = title
 
     def set_menu_callback(self, key, callback=None):
