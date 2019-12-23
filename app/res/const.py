@@ -9,3 +9,4 @@ class Const:
     idle_time = 30
     idle_time_short = 2
     unlock_count_limit = 3
+    restart_deadline = 0.2

@@ -48,6 +48,7 @@ class Application(ApplicationBase, ApplicationView):
         self.disable_near_unlock = False
 
         self.hint_set_password = True
+        self.need_restart = False
 
         self.cg_session_info = {}
         self.device_info = {}
@@ -305,6 +306,10 @@ class Application(ApplicationBase, ApplicationView):
                 self.unlock_count = 0
                 self.is_idle_wake = self.is_locked
 
+        if idle_time >= Const.idle_time:
+            if self.need_restart:
+                self.restart()
+
     def callback_signal_value_changed(self, signal_value: int, signal_value_prev: int = None):
         if signal_value is not None:
             is_weak = signal_value <= self.config.weak_signal_value
@@ -363,6 +368,9 @@ class Application(ApplicationBase, ApplicationView):
         Log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         if status and not status_prev:
             self.is_lid_wake = True
+
+            if self.need_restart:
+                self.restart()
 
         self.event_trigger(self.callback_lid_status_changed, params, self.config.event_lid_status_changed)
 
@@ -475,9 +483,33 @@ class Application(ApplicationBase, ApplicationView):
 
         def t_refresh():
             try:
+                ts = []
+                count = 0
                 while True:
-                    self.callback_refresh()
+                    if not self.need_restart:
+                        t = time.time()
+                        self.callback_refresh()
+                        t = time.time() - t
+
+                        if count > 5:
+                            tl = len(ts)
+                            ta = t if tl == 0 else sum(ts) / tl
+                            if tl < 10 or t < ta * 2:
+                                ts.append(t)
+                            else:
+                                if ta >= Const.restart_deadline:
+                                    self.need_restart = True
+                                    Log.append(t_refresh, 'Warning', 'Refresh timeout (%s), Need restart.' % t)
+
+                            if count % 10 == 0:
+                                Log.append(t_refresh, 'Info', 'Refresh average time (%s).' % ta)
+
+                            if tl >= 10:
+                                ts.pop(0)
+                    else:
+                        self.callback_refresh()
                     time.sleep(1)
+                    count += 1
             except:
                 self.callback_exception()
 
