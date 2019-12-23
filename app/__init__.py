@@ -496,16 +496,15 @@ class Application(ApplicationBase, ApplicationView):
                             ta = t if tl == 0 else sum(ts) / tl
                             if tl < 10 or t < ta * 2:
                                 ts.append(t)
-                            else:
-                                if ta >= Const.restart_deadline:
-                                    self.need_restart = True
-                                    Log.append(t_refresh, 'Warning', 'Refresh timeout (%s), Need restart.' % t)
-
-                            if count % 10 == 0:
-                                Log.append(t_refresh, 'Info', 'Refresh average time (%s).' % ta)
-
                             if tl >= 10:
                                 ts.pop(0)
+
+                            if ta >= Const.restart_deadline:
+                                self.need_restart = True
+                                Log.append(t_refresh, 'Warning', 'Refresh timeout (%s), Need restart.' % ta)
+
+                            if count % 30 == 0:
+                                Log.append(t_refresh, 'Info', 'Refresh average time (%s).' % ta)
                     else:
                         self.callback_refresh()
                     time.sleep(1)
