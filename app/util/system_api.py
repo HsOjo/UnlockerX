@@ -6,7 +6,7 @@ from app.util.log import Log
 _cg_session_info = None
 
 
-def open_url(url, new=False, wait=False, bundle: str = None):
+def open_url(url, new=False, wait=False, bundle: str = None, p_args=None):
     args = ['/usr/bin/open']
     if new:
         args.append('-n')
@@ -17,6 +17,20 @@ def open_url(url, new=False, wait=False, bundle: str = None):
         args.append(bundle)
 
     args.append(url)
+
+    p_args_conv = []
+    if p_args is not None:
+        for arg in p_args:
+            if isinstance(arg, str):
+                if ' ' in arg:
+                    arg = '"%s"' % arg
+            else:
+                arg = '%s' % arg
+            p_args_conv.append(arg)
+
+        args.append('--args')
+        args.append(' '.join(p_args_conv))
+
     return common.execute(args)
 
 

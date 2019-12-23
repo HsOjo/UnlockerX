@@ -15,14 +15,15 @@ class Log:
     lock_log = Lock()
 
     @staticmethod
-    def init_app():
+    def init_app(keep_log=False):
         log_dir = os.path.expanduser('~/Library/Logs/')
 
         path_log = '%s/%s.log' % (log_dir, Const.app_name)
         path_err = '%s/%s.err' % (log_dir, Const.app_name)
 
-        Log.io_log = open(path_log, 'w+')
-        Log.io_err = open(path_err, 'w+')
+        mode = 'a' if keep_log else 'w+'
+        Log.io_log = open(path_log, mode)
+        Log.io_err = open(path_err, mode)
 
         # redirect stdout and stderr.
         sys.stdout = Log.io_log

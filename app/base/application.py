@@ -18,9 +18,10 @@ class ApplicationBase:
         self.app = rumps.App(Const.app_name, quit_button=None)
         self.app_shell = init_app_shell()
         if self.app_shell.check():
-            Log.init_app()
+            Log.init_app(keep_log='--restart' in sys.argv)
 
-        Log.append('app_init', 'Info', 'version: %s' % Const.version, system_api.get_system_version())
+        Log.append('app_init', 'Info', 'version: %s' % Const.version, 'args: %s' % sys.argv,
+                   system_api.get_system_version())
         Log.append('app_shell', 'Info', {
             'shell_class': self.app_shell.__class__.__name__,
             'runtime_dir': self.app_shell.get_runtime_dir(),
@@ -216,7 +217,7 @@ class ApplicationBase:
     def restart(self):
         path = self.app_shell.get_app_path()
         if path is not None:
-            system_api.open_url(path, True)
+            system_api.open_url(path, True, p_args=('--restart',))
         else:
             # quick restart for debug.
             self.app.title = '\x00'
@@ -224,6 +225,8 @@ class ApplicationBase:
 
             path = common.python_path()
             if path is not None:
+                if '--restart' not in sys.argv:
+                    sys.argv.append('--restart')
                 os.system('%s %s' % (path, ' '.join(sys.argv)))
 
         self.quit()
