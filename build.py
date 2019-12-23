@@ -69,7 +69,7 @@ if use_py2app:
     with ZipFile(lib_path, 'r') as zf:
         zf.extractall(lib_file)
 
-    zip_directory(lib_file, lib_path, filter_='.*\.pyc$', remove='.*__pycache__.*')
+    zip_directory(lib_file, lib_path, filter_='(.*\.pyc$)|(.*\.pem$)', remove='.*__pycache__.*')
     shutil.rmtree(lib_file)
 else:
     data_str = ''
