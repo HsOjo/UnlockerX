@@ -443,7 +443,8 @@ class Application(ApplicationBase, ApplicationView):
                 if self.config.device_address is not None:
                     if not self.is_connected and not self.lid_stat and (
                             not self.display_sleep_stat or self.idle_time < Const.idle_time or self.is_wake):
-                        self.bluetooth_connector.connect(self.config.device_address)
+                        # self.bluetooth_connector.connect(self.config.device_address)
+                        self.blue_util.connect(self.config.device_address)
             except:
                 self.callback_exception()
                 break
