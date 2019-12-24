@@ -20,7 +20,7 @@ class ApplicationBase:
         self.app = rumps.App(Const.app_name, quit_button=None)
         self.app_shell = init_app_shell()
         if self.app_shell.check():
-            Log.init_app(keep_log='--restart' in sys.argv)
+            Log.init_app(keep_log=self.is_restart)
 
         Log.append('app_init', 'Info', 'version: %s' % Const.version, 'args: %s' % sys.argv,
                    system_api.get_system_version())
@@ -39,7 +39,12 @@ class ApplicationBase:
         self.menu_check_update = None  # type: rumps.MenuItem
 
         self.is_admin = system_api.check_admin()
-        threading.Thread(target=self.check_update, args=(False,)).start()
+        if not self.is_restart:
+            threading.Thread(target=self.check_update, args=(False,)).start()
+
+    @property
+    def is_restart(self):
+        return '--restart' in sys.argv
 
     def add_menu(self, name, title=None, callback=None, parent=None):
         if parent is None:
@@ -230,7 +235,7 @@ class ApplicationBase:
 
             path = common.python_path()
             if path is not None:
-                if '--restart' not in sys.argv:
+                if not self.is_restart:
                     sys.argv.append('--restart')
                 os.system('%s %s' % (path, ' '.join(sys.argv)))
 
