@@ -1,16 +1,7 @@
-from app import common
+from app.lib.shell_lib import ShellLib
 
 
-class BlueUtil:
-    def __init__(self, path):
-        self.path = path
-
-    def _exec_out(self, *args):
-        return common.execute_get_out([self.path, *args])
-
-    def _exec(self, *args):
-        return common.execute([self.path, *args])
-
+class BlueUtil(ShellLib):
     def _convert_device(self, content):
         cols = content.split(',')
 
@@ -48,47 +39,47 @@ class BlueUtil:
 
     @property
     def power(self):
-        content = self._exec_out('--power')
+        content = self.exec_out('--power')
         return bool(int(content))
 
     @power.setter
     def power(self, power: bool):
-        self._exec_out('--power', str(int(power)))
+        self.exec_out('--power', str(int(power)))
 
     @property
     def discoverable(self):
-        content = self._exec_out('--discoverable')
+        content = self.exec_out('--discoverable')
         return bool(int(content))
 
     @discoverable.setter
     def discoverable(self, discoverable: bool):
-        self._exec_out('--discoverable', str(int(discoverable)))
+        self.exec_out('--discoverable', str(int(discoverable)))
 
     def inquiry(self, time=10):
-        return self._convert_devices(self._exec_out('--inquiry', str(int(time))))
+        return self._convert_devices(self.exec_out('--inquiry', str(int(time))))
 
     def recent(self, num=10):
-        return self._convert_devices(self._exec_out('--recent', str(int(num))))
+        return self._convert_devices(self.exec_out('--recent', str(int(num))))
 
     @property
     def favourites(self):
-        return self._convert_devices(self._exec_out('--favourites'))
+        return self._convert_devices(self.exec_out('--favourites'))
 
     @property
     def paired(self):
-        return self._convert_devices(self._exec_out('--paired'))
+        return self._convert_devices(self.exec_out('--paired'))
 
     def info(self, dev_id: str):
-        return self._convert_device(self._exec_out('--info', dev_id))
+        return self._convert_device(self.exec_out('--info', dev_id))
 
     def is_connected(self, dev_id: str):
-        content = self._exec_out('--is-connected', dev_id)
+        content = self.exec_out('--is-connected', dev_id)
         return bool(int(content))
 
     def connect(self, dev_id: str):
-        stat, out, err = self._exec('--connect', dev_id)
+        stat, out, err = self.exec('--connect', dev_id)
         return stat == 0
 
     def pair(self, dev_id: str, pin=''):
-        stat, out, err = self._exec('--pair', dev_id, pin)
+        stat, out, err = self.exec('--pair', dev_id, pin)
         return stat == 0

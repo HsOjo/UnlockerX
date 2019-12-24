@@ -45,6 +45,7 @@ add_data('./app/res/icon_weak_signal.png', './app/res')
 add_data('./app/res/icon_disconnect.png', './app/res')
 add_data('./app/res/icon.png', './app/res')
 add_data('./app/lib/blueutil/blueutil', './app/lib/blueutil')
+# add_data('./app/lib/bluetoothconnector/BluetoothConnector', './app/lib/bluetoothconnector')
 
 path_app_dir = './dist/%s.app' % Const.app_name
 path_app_zip = './dist/%s-%s.zip' % (Const.app_name, Const.version)

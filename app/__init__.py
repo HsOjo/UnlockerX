@@ -7,6 +7,7 @@ import rumps
 from app import common
 from app.base.application import ApplicationBase
 from app.config import Config
+from app.lib.bluetoothconnector import BluetoothConnector
 from app.lib.blueutil import BlueUtil
 from app.res.const import Const
 from app.res.language import load_language, LANGUAGES
@@ -25,6 +26,8 @@ class Application(ApplicationBase, ApplicationView):
         self.init_menu()
 
         self.blue_util = BlueUtil('%s/app/lib/blueutil/blueutil' % self.app_shell.get_runtime_dir())
+        self.bluetooth_connector = BluetoothConnector(
+            '%s/app/lib/bluetoothconnector/BluetoothConnector' % self.app_shell.get_runtime_dir())
 
         self.lock_time = None  # type: float
         self.idle_time = None  # type: float
@@ -440,7 +443,7 @@ class Application(ApplicationBase, ApplicationView):
                 if self.config.device_address is not None:
                     if not self.is_connected and not self.lid_stat and (
                             not self.display_sleep_stat or self.idle_time < Const.idle_time or self.is_wake):
-                        self.blue_util.connect(self.config.device_address)
+                        self.bluetooth_connector.connect(self.config.device_address)
             except:
                 self.callback_exception()
                 break
