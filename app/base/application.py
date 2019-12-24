@@ -318,6 +318,10 @@ class ApplicationBase:
 
         if res == ':export log':
             self.export_log()
+        elif res == ':view log':
+            p_console_app = '/System/Applications/Utilities/Console.app'
+            system_api.open_url(p_console_app, p_args=(Log.path_log,), new=True)
+            system_api.open_url(p_console_app, p_args=(Log.path_err,), new=True)
         elif res == ':check update':
             self.check_update(by_user=True, test=True)
         elif res == ':restart':

@@ -9,6 +9,11 @@ from app.util import io_helper, object_convert
 
 
 class Log:
+    log_dir = os.path.expanduser('~/Library/Logs/')
+
+    path_log = '%s/%s.log' % (log_dir, Const.app_name)
+    path_err = '%s/%s.err.log' % (log_dir, Const.app_name)
+
     io_log = StringIO()
     io_err = StringIO()
     replaces = {}
@@ -16,14 +21,9 @@ class Log:
 
     @staticmethod
     def init_app(keep_log=False):
-        log_dir = os.path.expanduser('~/Library/Logs/')
-
-        path_log = '%s/%s.log' % (log_dir, Const.app_name)
-        path_err = '%s/%s.err' % (log_dir, Const.app_name)
-
         mode = 'a' if keep_log else 'w+'
-        Log.io_log = open(path_log, mode)
-        Log.io_err = open(path_err, mode)
+        Log.io_log = open(Log.path_log, mode)
+        Log.io_err = open(Log.path_err, mode)
 
         # redirect stdout and stderr.
         sys.stdout = Log.io_log
