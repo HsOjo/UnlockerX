@@ -100,6 +100,8 @@ class Application(ApplicationBase, ApplicationView):
         self.set_menu_callback(self.menu_clear_config, callback=self.clear_config)
         self.set_menu_callback(self.menu_use_screen_saver_replace_lock,
                                callback=self.generate_callback_switch_config('use_screen_saver_replace_lock'))
+        self.set_menu_callback(self.menu_use_bluetooth_connector_replace_connect,
+                               callback=self.generate_callback_switch_config('use_bluetooth_connector_replace_connect'))
 
         # menu_event_callback
         self.set_menu_callback(self.menu_set_signal_weak_event,
@@ -440,8 +442,10 @@ class Application(ApplicationBase, ApplicationView):
                 if self.config.device_address is not None:
                     if not self.is_connected and not self.lid_stat and (
                             not self.display_sleep_stat or self.idle_time < Const.idle_time or self.is_wake):
-                        # self.bluetooth_connector.connect(self.config.device_address)
-                        self.blue_util.connect(self.config.device_address)
+                        if self.config.use_bluetooth_connector_replace_connect:
+                            self.bluetooth_connector.connect(self.config.device_address)
+                        else:
+                            self.blue_util.connect(self.config.device_address)
             except:
                 self.callback_exception()
                 break

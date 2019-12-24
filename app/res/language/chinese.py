@@ -67,6 +67,7 @@ Enjoy yourself!''' % Const.app_name
     menu_clear_config = '清空配置文件'
     menu_signal_value_visible_on_icon = '显示信号值在图标旁'
     menu_use_screen_saver_replace_lock = '使用屏幕保护替代锁定'
+    menu_use_bluetooth_connector_replace_connect = '使用 "BluetoothConnector" 替代连接'
     menu_export_log = '导出日志文件'
     menu_about = '关于'
     menu_quit = '退出'
