@@ -163,6 +163,7 @@ class Application(ApplicationBase, ApplicationView):
     def inject_menu_value(self):
         self.menu_signal_value_visible_on_icon.state = self.config.signal_value_visible_on_icon
         self.menu_use_screen_saver_replace_lock.state = self.config.use_screen_saver_replace_lock
+        self.menu_use_bluetooth_connector_replace_connect.state = self.config.use_bluetooth_connector_replace_connect
 
     def lock_now(self, by_app=True):
         Log.append(self.lock_now, 'Info', dict(
