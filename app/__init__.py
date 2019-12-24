@@ -372,9 +372,6 @@ class Application(ApplicationBase, ApplicationView):
         if status and not status_prev:
             self.is_lid_wake = True
 
-            if self.need_restart:
-                self.restart()
-
         self.event_trigger(self.callback_lid_status_changed, params, self.config.event_lid_status_changed)
 
     def callback_lock_status_changed(self, status: bool, status_prev: bool = None):
