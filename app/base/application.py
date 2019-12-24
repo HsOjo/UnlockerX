@@ -1,6 +1,7 @@
 import os
 import sys
 import threading
+import time
 
 import rumps
 
@@ -15,6 +16,7 @@ from app.util.log import Log
 
 class ApplicationBase:
     def __init__(self, config_class):
+        self.init_time = time.time()
         self.app = rumps.App(Const.app_name, quit_button=None)
         self.app_shell = init_app_shell()
         if self.app_shell.check():
@@ -182,6 +184,7 @@ class ApplicationBase:
             self.callback_exception()
 
     def callback_exception(self, exc=None):
+        need_restart = (time.time() - self.init_time) >= 10
         if exc is None:
             exc = common.get_exception()
         Log.append(self.callback_exception, 'Error', exc)
@@ -189,7 +192,9 @@ class ApplicationBase:
             self.quit()
         if osa_api.alert(self.lang.title_crash, self.lang.description_crash):
             self.export_log()
-        self.restart()
+
+        if need_restart:
+            self.restart()
 
     def message_box(self, title, description):
         return osa_api.dialog_select(title, description, [self.lang.ok])
