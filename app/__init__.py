@@ -312,7 +312,9 @@ class Application(ApplicationBase, ApplicationView):
                 self.unlock_count = 0
                 self.is_idle_wake = self.is_locked
 
-        if idle_time >= Const.idle_time:
+        restart_time = max([Const.idle_time, self.config.disconnect_lock_delay,
+                            self.config.weak_signal_lock_delay]) + Const.idle_time_short
+        if idle_time >= restart_time:
             if self.need_restart:
                 self.restart()
 
