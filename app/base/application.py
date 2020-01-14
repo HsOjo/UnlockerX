@@ -195,6 +195,9 @@ class ApplicationBase:
         Log.append(self.callback_exception, 'Error', exc)
         if 'KeyboardInterrupt' in exc:
             self.quit()
+        elif 'Too many open files in system' in exc:
+            self.restart()
+
         if osa_api.alert(self.lang.title_crash, self.lang.description_crash):
             self.export_log()
 
