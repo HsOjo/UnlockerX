@@ -334,6 +334,19 @@ class Application(ApplicationBase, ApplicationView):
                 self.callback_signal_weak(is_weak, is_weak_prev)
         else:
             self.is_weak = True
+            self.callback_signal_weak(True)
+
+    def refresh_app_icon_status(self):
+        d_res = '%s/app/res/%%s' % self.app_shell.get_runtime_dir()
+        if not self.is_connected:
+            p_icon = d_res % 'icon_disconnect.png'
+        elif self.is_weak:
+            p_icon = d_res % 'icon_weak_signal.png'
+        else:
+            p_icon = d_res % 'icon.png'
+
+        if self.app.icon != p_icon:
+            self.app.icon = p_icon
 
     def callback_signal_weak(self, status: bool, status_prev: bool = None):
         params = locals()
@@ -341,8 +354,7 @@ class Application(ApplicationBase, ApplicationView):
         Log.append(self.callback_signal_weak, 'Info',
                    'from "%s" to "%s", signal value: %s' % (status_prev, status, self.signal_value))
 
-        self.app.icon = '%s/app/res/%s' % (
-            self.app_shell.get_runtime_dir(), 'icon_weak_signal.png' if status else 'icon.png')
+        self.refresh_app_icon_status()
 
         if status:
             self.lock_delay(self.config.weak_signal_lock_delay)
@@ -356,8 +368,7 @@ class Application(ApplicationBase, ApplicationView):
 
         Log.append(self.callback_connect_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
 
-        self.app.icon = '%s/app/res/%s' % (
-            self.app_shell.get_runtime_dir(), 'icon.png' if status else 'icon_disconnect.png')
+        self.refresh_app_icon_status()
 
         if status_prev is not None and not status:
             # disconnect.
