@@ -54,7 +54,7 @@ Enjoy yourself!''' % Const.app_name
     menu_event_callback = '事件回调'
     menu_set_lock_status_changed_event = '设置锁定状态改变事件'
     menu_set_lid_status_changed_event = '设置合盖状态改变事件'
-    menu_set_signal_weak_event = '设置信号弱事件'
+    menu_set_weak_signal_event = '设置信号弱事件'
     menu_set_connect_status_changed_event = '设置连接状态改变事件'
     menu_set_weak_signal_lock_delay = '设置信号弱锁定延迟'
     menu_set_disconnect_lock_delay = '设置断开连接锁定延迟'

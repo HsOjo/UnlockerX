@@ -5,7 +5,7 @@ import time
 time_now = lambda: time.strftime('%Y_%m_%d_%H_%M_%S')
 
 
-def event_signal_weak(status: bool, status_prev: bool = None, **env):
+def event_weak_signal(status: bool, status_prev: bool = None, **env):
     # TODO: something you want to do.
     print(time_now(), 'from "%s" to "%s"' % (status_prev, status))
 
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     if len(sys.argv) >= 2:
         event = sys.argv[1]
         events = {
-            'weak': event_signal_weak,
+            'weak': event_weak_signal,
             'connect': event_connect_status_changed,
             'lock': event_lock_status_changed,
         }

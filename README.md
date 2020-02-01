@@ -10,7 +10,7 @@ Near unlock your Mac by Bluetooth device!
   * Korean (By Translater)
 
 * Events callback execute custom program support !!!
-  * Signal Weak
+  * Weak Signal
   * Connect Status Changed
   * Lock Status Changed
   * Lid Status Changed

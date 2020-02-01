@@ -104,8 +104,8 @@ class Application(ApplicationBase, ApplicationView):
                                callback=self.generate_callback_switch_config('use_bluetooth_connector_replace_connect'))
 
         # menu_event_callback
-        self.set_menu_callback(self.menu_set_signal_weak_event,
-                               callback=self.generate_callback_config_input('event_signal_weak',
+        self.set_menu_callback(self.menu_set_weak_signal_event,
+                               callback=self.generate_callback_config_input('event_weak_signal',
                                                                             'description_set_event', empty_state=True))
         self.set_menu_callback(self.menu_set_connect_status_changed_event,
                                callback=self.generate_callback_config_input('event_connect_status_changed',
@@ -329,12 +329,9 @@ class Application(ApplicationBase, ApplicationView):
             is_decrease = signal_value_prev is not None and signal_value < signal_value_prev
 
             if is_decrease and is_weak and not is_weak_prev:
-                self.callback_signal_weak(is_weak, is_weak_prev)
+                self.callback_weak_signal(is_weak, is_weak_prev)
             elif is_increase and is_weak_prev and not is_weak:
-                self.callback_signal_weak(is_weak, is_weak_prev)
-        else:
-            self.is_weak = True
-            self.callback_signal_weak(True)
+                self.callback_weak_signal(is_weak, is_weak_prev)
 
     def refresh_app_icon_status(self):
         d_res = '%s/app/res/%%s' % self.app_shell.get_runtime_dir()
@@ -348,10 +345,10 @@ class Application(ApplicationBase, ApplicationView):
         if self.app.icon != p_icon:
             self.app.icon = p_icon
 
-    def callback_signal_weak(self, status: bool, status_prev: bool = None):
+    def callback_weak_signal(self, status: bool, status_prev: bool = None):
         params = locals()
 
-        Log.append(self.callback_signal_weak, 'Info',
+        Log.append(self.callback_weak_signal, 'Info',
                    'from "%s" to "%s", signal value: %s' % (status_prev, status, self.signal_value))
 
         self.refresh_app_icon_status()
@@ -361,7 +358,7 @@ class Application(ApplicationBase, ApplicationView):
         else:
             self.lock_delay(None)
 
-        self.event_trigger(self.callback_signal_weak, params, self.config.event_signal_weak)
+        self.event_trigger(self.callback_weak_signal, params, self.config.event_weak_signal)
 
     def callback_connect_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
@@ -522,7 +519,7 @@ class Application(ApplicationBase, ApplicationView):
                                 self.need_restart = True
                                 Log.append(t_refresh, 'Warning', 'Refresh timeout (%s), Need restart.' % ta)
 
-                            if count % 30 == 0:
+                            if count % 30 == 0 and not self.lid_stat:
                                 Log.append(t_refresh, 'Info', 'Refresh average time (%s).' % ta)
                     else:
                         self.callback_refresh()

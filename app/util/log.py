@@ -21,7 +21,7 @@ class Log:
 
     @staticmethod
     def init_app(keep_log=False):
-        mode = 'a' if keep_log else 'w+'
+        mode = 'a+' if keep_log else 'w+'
         Log.io_log = open(Log.path_log, mode)
         Log.io_err = open(Log.path_err, mode)
 

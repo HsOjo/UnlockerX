@@ -35,7 +35,7 @@ class ApplicationView(ViewBase):
         self.menu_export_log = None  # type: rumps.MenuItem
         self.menu_clear_config = None  # type: rumps.MenuItem
 
-        self.menu_set_signal_weak_event = None  # type: rumps.MenuItem
+        self.menu_set_weak_signal_event = None  # type: rumps.MenuItem
         self.menu_set_connect_status_changed_event = None  # type: rumps.MenuItem
         self.menu_set_lock_status_changed_event = None  # type: rumps.MenuItem
         self.menu_set_lid_status_changed_event = None  # type: rumps.MenuItem
@@ -90,7 +90,7 @@ class ApplicationView(ViewBase):
         # menu_advanced_options end
 
         # menu_event_callback
-        self.add_menu('set_signal_weak_event', parent=self.menu_event_callback)
+        self.add_menu('set_weak_signal_event', parent=self.menu_event_callback)
         self.add_menu('set_connect_status_changed_event', parent=self.menu_event_callback)
         self.add_menu('-', parent=self.menu_event_callback)
         self.add_menu('set_lock_status_changed_event', parent=self.menu_event_callback)
