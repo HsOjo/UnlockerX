@@ -1,3 +1,5 @@
+import base64
+import json
 import os
 import sys
 import time
@@ -102,3 +104,15 @@ def python_path():
         return paths[0]
 
     return None
+
+
+def load_b64_data(data_str) -> object:
+    data_str = base64.b64decode(data_str).decode()
+    data = json.loads(data_str)
+    return data
+
+
+def dump_b64_data(obj) -> str:
+    data_str = json.dumps(obj)
+    data_str = base64.b64encode(data_str.encode()).decode()
+    return data_str

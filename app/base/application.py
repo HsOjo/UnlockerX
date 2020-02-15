@@ -28,6 +28,8 @@ class ApplicationBase:
             'shell_class': self.app_shell.__class__.__name__,
             'runtime_dir': self.app_shell.get_runtime_dir(),
             'app_path': self.app_shell.get_app_path(),
+            'is_restart': self.is_restart,
+            'restart_data': self.restart_data,
         })
 
         self.config = config_class()
@@ -45,6 +47,13 @@ class ApplicationBase:
     @property
     def is_restart(self):
         return '--restart' in sys.argv
+
+    @property
+    def restart_data(self):
+        if self.is_restart:
+            index = sys.argv.index('--restart') + 1
+            if index < len(sys.argv):
+                return common.load_b64_data(sys.argv[index])
 
     def add_menu(self, name, title=None, callback=None, parent=None):
         if parent is None:
@@ -196,7 +205,7 @@ class ApplicationBase:
         if 'KeyboardInterrupt' in exc:
             self.quit()
         elif 'Too many open files in system' in exc:
-            self.restart()
+            self.quit()
 
         if osa_api.alert(self.lang.title_crash, self.lang.description_crash):
             self.export_log()
@@ -227,10 +236,11 @@ class ApplicationBase:
     def quit(self):
         rumps.quit_application()
 
-    def restart(self):
+    def restart(self, data=None):
         path = self.app_shell.get_app_path()
         if path is not None:
-            system_api.open_url(path, True, p_args=('--restart',))
+            rd = common.dump_b64_data(data)
+            system_api.open_url(path, True, p_args=('--restart', rd))
         else:
             # quick restart for debug.
             self.app.title = '\x00'
@@ -238,8 +248,6 @@ class ApplicationBase:
 
             path = common.python_path()
             if path is not None:
-                if not self.is_restart:
-                    sys.argv.append('--restart')
                 os.system('%s %s' % (path, ' '.join(sys.argv)))
 
         self.quit()

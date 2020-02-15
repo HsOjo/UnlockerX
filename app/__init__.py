@@ -61,6 +61,13 @@ class Application(ApplicationBase, ApplicationView):
 
         self.blue_refresh_time = 0
 
+        rd = self.restart_data  # type: dict
+        if rd is not None:
+            if rd.get('disable_leave_lock'):
+                self.set_disable_leave_lock(True)
+            if rd.get('disable_near_unlock'):
+                self.set_disable_near_unlock(True)
+
     def bind_menu_callback(self):
         # menu_application
         self.set_menu_callback(self.menu_bind_bluetooth_device, callback=self.bind_bluetooth_device)
@@ -316,7 +323,10 @@ class Application(ApplicationBase, ApplicationView):
                             self.config.weak_signal_lock_delay]) + Const.idle_time_short
         if idle_time >= restart_time:
             if self.need_restart:
-                self.restart()
+                self.restart(data=dict(
+                    disable_leave_lock=self.disable_leave_lock,
+                    disable_near_unlock=self.disable_near_unlock
+                ))
 
     def callback_signal_value_changed(self, signal_value: int, signal_value_prev: int = None):
         if signal_value is not None:
