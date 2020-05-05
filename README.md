@@ -25,6 +25,11 @@ This program can work normally in macOS **10.14/10.15**. (Tested on MacBook Pro 
 
 Please view [Releases Page](../../releases).
 
+## Some Problems
+
+* After macOS 10.15, Sometimes can not unlock normally. (Like password edit unfocused.)
+  * You can set unlock delay time (in "Preferences" - "Advanced Options") to solve this problem. (maybe)
+
 ## How To Build
 
 * Install Requirement.

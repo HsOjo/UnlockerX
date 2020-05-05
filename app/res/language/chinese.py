@@ -41,6 +41,7 @@ Enjoy yourself!''' % Const.app_name
     description_cancel_accessibility = '''你取消了"辅助功能设置"，"%s"将无法正常工作。''' % (Const.app_name)
     description_set_bluetooth_refresh_rate = '''设置蓝牙刷新率；如果刷新率较高（值较小），则电池使用时间将降低。
 单位：秒，最高刷新率为 "1" 秒/次。'''
+    description_set_unlock_delay = '''设备解锁延迟的时间。'''
 
     view_device_name = '设备名称：%s'
     view_device_address = '设备地址：%s'
@@ -65,6 +66,7 @@ Enjoy yourself!''' % Const.app_name
     menu_set_startup = '设置登录启动'
     menu_check_update = '检查更新'
     menu_clear_config = '清空配置文件'
+    menu_set_unlock_delay = '设置解锁延迟'
     menu_signal_value_visible_on_icon = '显示信号值在图标旁'
     menu_use_screen_saver_replace_lock = '使用屏幕保护替代锁定'
     menu_use_bluetooth_connector_replace_connect = '使用 "BluetoothConnector" 替代连接'

@@ -121,7 +121,7 @@ class ApplicationBase:
 
         return switch
 
-    def generate_callback_config_input(self, key, description, hidden=False, to_int=False, empty_state=False):
+    def generate_callback_config_input(self, key, description, hidden=False, convertor=None, empty_state=False):
         """
         Generate config field input dialog menu callback function.
         """
@@ -131,10 +131,10 @@ class ApplicationBase:
                                            str(getattr(self.config, key, '')), hidden=hidden)
 
             if content is not None:
-                if to_int:
-                    if isinstance(content, str) and content.replace('-', '', 1).isnumeric():
-                        setattr(self.config, key, int(content))
-                else:
+                if convertor is not None:
+                    content = convertor(content)
+
+                if content is not None:
                     setattr(self.config, key, content)
 
                 if empty_state:

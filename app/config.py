@@ -16,6 +16,7 @@ class Config(ConfigBase):
     use_bluetooth_connector_replace_connect = False
     bluetooth_refresh_rate = 1
     signal_value_visible_on_icon = False
+    unlock_delay = 2
 
     event_weak_signal = ''
     event_connect_status_changed = ''

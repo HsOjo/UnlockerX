@@ -44,6 +44,7 @@ Enjoy yourself!''' % Const.app_name
         Const.app_name)
     description_set_bluetooth_refresh_rate = '''Set Bluetooth refresh rate; If the refresh rate higher(the value is smaller), Then the battery life will lower.
 Unit: second, The maximal refresh rate is "1" second per time.'''
+    description_set_unlock_delay = '''Before device unlock delay time.'''
 
     view_device_name = 'Device Name: %s'
     view_device_address = 'Device Address: %s'
@@ -68,6 +69,7 @@ Unit: second, The maximal refresh rate is "1" second per time.'''
     menu_set_startup = 'Set Login Startup'
     menu_check_update = 'Check Update'
     menu_clear_config = 'Clear Config'
+    menu_set_unlock_delay = 'Set Unlock Delay'
     menu_signal_value_visible_on_icon = 'Signal Value Visible On Icon'
     menu_use_screen_saver_replace_lock = 'Use ScreenSaver Replace Lock'
     menu_use_bluetooth_connector_replace_connect = 'Use "BluetoothConnector" Replace Connect'

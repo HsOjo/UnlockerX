@@ -69,6 +69,15 @@ class Application(ApplicationBase, ApplicationView):
                 self.set_disable_near_unlock(True)
 
     def bind_menu_callback(self):
+        def conv_to_type(x: str, t):
+            try:
+                return t(x)
+            except:
+                return None
+
+        conv_to_int = lambda x: conv_to_type(x, int)
+        conv_to_float = lambda x: conv_to_type(x, float)
+
         # menu_application
         self.set_menu_callback(self.menu_bind_bluetooth_device, callback=self.bind_bluetooth_device)
         self.set_menu_callback(self.menu_disable_leave_lock,
@@ -85,22 +94,30 @@ class Application(ApplicationBase, ApplicationView):
         # menu_preferences
         self.set_menu_callback(self.menu_set_bluetooth_refresh_rate,
                                callback=self.generate_callback_config_input(
-                                   'bluetooth_refresh_rate', 'description_set_bluetooth_refresh_rate', to_int=True))
+                                   'bluetooth_refresh_rate', 'description_set_bluetooth_refresh_rate',
+                                   convertor=conv_to_int))
         self.set_menu_callback(self.menu_set_weak_signal_value,
                                callback=self.generate_callback_config_input(
-                                   'weak_signal_value', 'description_set_weak_signal_value', to_int=True))
+                                   'weak_signal_value', 'description_set_weak_signal_value',
+                                   convertor=conv_to_int))
         self.set_menu_callback(self.menu_set_weak_signal_lock_delay,
                                callback=self.generate_callback_config_input(
-                                   'weak_signal_lock_delay', 'description_set_weak_signal_lock_delay', to_int=True))
+                                   'weak_signal_lock_delay', 'description_set_weak_signal_lock_delay',
+                                   convertor=conv_to_float))
         self.set_menu_callback(self.menu_set_disconnect_lock_delay,
                                callback=self.generate_callback_config_input(
-                                   'disconnect_lock_delay', 'description_set_disconnect_lock_delay', to_int=True))
+                                   'disconnect_lock_delay', 'description_set_disconnect_lock_delay',
+                                   convertor=conv_to_float))
         self.set_menu_callback(self.menu_set_startup, callback=lambda _: self.set_startup())
         self.set_menu_callback(self.menu_set_password,
                                callback=self.generate_callback_config_input(
                                    'password', 'description_set_password', hidden=True))
 
         # menu_advanced_options
+        self.set_menu_callback(self.menu_set_unlock_delay,
+                               callback=self.generate_callback_config_input(
+                                   'unlock_delay', 'description_set_unlock_delay',
+                                   convertor=conv_to_float))
         self.set_menu_callback(self.menu_signal_value_visible_on_icon,
                                callback=self.generate_callback_switch_config('signal_value_visible_on_icon'))
         self.set_menu_callback(self.menu_export_log, callback=lambda _: self.export_log())
@@ -303,6 +320,7 @@ class Application(ApplicationBase, ApplicationView):
                         if is_wake and self.unlock_count > Const.unlock_count_limit:
                             self.unlock_count = 0
 
+                        time.sleep(self.config.unlock_delay)
                         need_unlock = self.lock_by_app or not self.lock_by_user
                         if is_wake or (need_unlock and self.unlock_count <= Const.unlock_count_limit + 1):
                             if not display_sleep_stat:
@@ -517,7 +535,7 @@ class Application(ApplicationBase, ApplicationView):
                         self.callback_refresh()
                         t = time.time() - t
 
-                        if count > 5:
+                        if count > 10:
                             tl = len(ts)
                             ta = t if tl == 0 else sum(ts) / tl
                             if tl < 10 or t < ta * 2:

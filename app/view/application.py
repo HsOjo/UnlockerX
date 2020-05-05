@@ -29,6 +29,7 @@ class ApplicationView(ViewBase):
         self.menu_event_callback = None  # type: rumps.MenuItem
         self.menu_advanced_options = None  # type: rumps.MenuItem
 
+        self.menu_set_unlock_delay = None  # type: rumps.MenuItem
         self.menu_signal_value_visible_on_icon = None  # type: rumps.MenuItem
         self.menu_use_screen_saver_replace_lock = None  # type: rumps.MenuItem
         self.menu_use_bluetooth_connector_replace_connect = None  # type: rumps.MenuItem
@@ -78,6 +79,8 @@ class ApplicationView(ViewBase):
         # menu_preferences end
 
         # menu_advanced_options
+        self.add_menu('set_unlock_delay', parent=self.menu_advanced_options)
+        self.add_menu('-', parent=self.menu_advanced_options)
         self.add_menu('signal_value_visible_on_icon', parent=self.menu_advanced_options)
         self.add_menu('-', parent=self.menu_advanced_options)
         self.add_menu('use_screen_saver_replace_lock', parent=self.menu_advanced_options)
