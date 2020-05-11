@@ -1,3 +1,5 @@
+import re
+
 from app.lib.shell_lib import ShellLib
 
 
@@ -23,7 +25,7 @@ class BlueUtil(ShellLib):
             }
 
             if item['is_connected']:
-                value_str = cols[1][cols[1].find('-'):cols[1].find('dBm')].strip()
+                [value_str] = re.findall('(-?\d+) dBm', cols[1])
                 if value_str.replace('-', '', 1).isnumeric():
                     item['signal_value'] = int(value_str)
 
