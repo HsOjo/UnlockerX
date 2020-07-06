@@ -8,7 +8,7 @@ from app import common
 from app.base.application import ApplicationBase
 from app.config import Config
 from app.lib.bluetoothconnector import BluetoothConnector
-from app.lib.blueutil import BlueUtil
+from app.lib.blueutil import BlueUtil, DeviceInfo
 from app.res.const import Const
 from app.res.language import load_language, LANGUAGES
 from app.res.language.english import English
@@ -54,7 +54,7 @@ class Application(ApplicationBase, ApplicationView):
         self.need_restart = False
 
         self.cg_session_info = {}
-        self.device_info = {}
+        self.device_info = None  # type: DeviceInfo
 
         self.t_lock = threading.Lock()
         self.unlock_count = 0
@@ -150,21 +150,23 @@ class Application(ApplicationBase, ApplicationView):
         self.menu_disable_near_unlock.state = pause
 
     def bind_bluetooth_device(self, sender):
+        if len(self.blue_util.paired) == 0:
+            system_api.open_preference('Bluetooth', wait=True, new=True)
+
         devices = {}
         for device in self.blue_util.paired:
-            devices[device['name']] = device['address']
+            devices[device.name] = device.address
 
-        return self.generate_callback_config_select(
-            'device_address', self.lang.description_bind_bluetooth_device, devices)(sender)
+        if len(devices) > 0:
+            return self.generate_callback_config_select(
+                'device_address', self.lang.description_bind_bluetooth_device, devices)(sender)
 
     def refresh_device_info(self):
         self.set_menu_title(
-            'view_device_name', self.lang.view_device_name % (
-                self.device_info.get('name', self.lang.none)))
+            'view_device_name', self.lang.view_device_name % (self.device_info.name or self.lang.none))
 
         self.set_menu_title(
-            'view_device_address', self.lang.view_device_address % (
-                self.device_info.get('address', self.lang.none)))
+            'view_device_address', self.lang.view_device_address % (self.device_info.address or self.lang.none))
 
         signal_value = self.lang.none
         if self.signal_value is not None:
@@ -300,34 +302,37 @@ class Application(ApplicationBase, ApplicationView):
                 self.blue_refresh_time = time.time()
                 device_info_prev = self.device_info
                 self.device_info = self.blue_util.info(self.config.device_address)
+                self.callback_refresh_info(self.device_info, device_info_prev)
 
-                signal_value_prev = device_info_prev.get('signal_value')
-                signal_value = self.device_info.get('signal_value')
-                if signal_value != signal_value_prev:
-                    self.signal_value = signal_value
-                    self.callback_signal_value_changed(signal_value, signal_value_prev)
+    def callback_refresh_info(self, device_info: DeviceInfo, device_info_prev: DeviceInfo):
+        signal_value_prev = None if device_info_prev is None else device_info_prev.rssi
+        signal_value = None if device_info is None else device_info.rssi
 
-                is_connected_prev = device_info_prev.get('is_connected')
-                is_connected = self.device_info.get('is_connected')
-                if is_connected != is_connected_prev:
-                    self.is_connected = is_connected
-                    self.callback_connect_status_changed(is_connected, is_connected_prev)
+        if signal_value != signal_value_prev:
+            self.signal_value = signal_value
+            self.callback_signal_value_changed(signal_value, signal_value_prev)
 
-                if not self.disable_near_unlock and self.is_locked:
-                    is_idle = self.idle_time >= Const.idle_time
-                    is_wake = self.is_wake
-                    if not self.lid_stat and (is_wake or not is_idle) and not self.is_weak:
-                        if is_wake and self.unlock_count > Const.unlock_count_limit:
-                            self.unlock_count = 0
+        is_connected_prev = False if device_info_prev is None else device_info_prev.is_connected
+        is_connected = False if device_info is None else device_info.is_connected
+        if is_connected != is_connected_prev:
+            self.is_connected = is_connected
+            self.callback_connect_status_changed(is_connected, is_connected_prev)
 
-                        time.sleep(self.config.unlock_delay)
-                        need_unlock = self.lock_by_app or not self.lock_by_user
-                        if is_wake or (need_unlock and self.unlock_count <= Const.unlock_count_limit + 1):
-                            if not display_sleep_stat:
-                                if not self.unlock():
-                                    time.sleep(3)
-                                if self.unlock_count > Const.unlock_count_limit:
-                                    self.reset_wake()
+        if not self.disable_near_unlock and self.is_locked:
+            is_idle = self.idle_time >= Const.idle_time
+            is_wake = self.is_wake
+            if not self.lid_stat and (is_wake or not is_idle) and not self.is_weak:
+                if is_wake and self.unlock_count > Const.unlock_count_limit:
+                    self.unlock_count = 0
+
+                time.sleep(self.config.unlock_delay)
+                need_unlock = self.lock_by_app or not self.lock_by_user
+                if is_wake or (need_unlock and self.unlock_count <= Const.unlock_count_limit + 1):
+                    if not self.display_sleep_stat:
+                        if not self.unlock():
+                            time.sleep(3)
+                        if self.unlock_count > Const.unlock_count_limit:
+                            self.reset_wake()
 
     def callback_idle_time_changed(self, idle_time: float, idle_time_prev: float = None):
         if idle_time_prev is not None:
