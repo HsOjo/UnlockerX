@@ -321,7 +321,7 @@ class Application(ApplicationBase, ApplicationView):
         if not self.disable_near_unlock and self.is_locked:
             is_idle = self.idle_time >= Const.idle_time
             is_wake = self.is_wake
-            if not self.lid_stat and (is_wake or not is_idle) and not self.is_weak:
+            if not self.lid_stat and (is_wake or not is_idle) and not self.is_weak and self.is_connected:
                 if is_wake and self.unlock_count > Const.unlock_count_limit:
                     self.unlock_count = 0
 
@@ -480,7 +480,7 @@ class Application(ApplicationBase, ApplicationView):
 
                 if not self.disable_leave_lock:
                     if lock_time is not None and time.time() >= lock_time:
-                        if self.is_weak and not self.is_locked:
+                        if (self.is_weak or not self.is_connected) and not self.is_locked:
                             self.lock_now()
 
                 if self.config.device_address is not None:
