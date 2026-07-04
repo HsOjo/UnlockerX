@@ -48,7 +48,6 @@ def _pyinstaller():
         '--noconfirm', '--clean',
         '--windowed',
         '--onedir',
-        '--target-arch', 'universal2',
         '--name', Const.app_name,
         '--icon', ICON,
         '--osx-bundle-identifier', Const.bundle_id,
