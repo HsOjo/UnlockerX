@@ -13,7 +13,7 @@ from AppKit import (
 from Foundation import NSObject
 
 from app.core.config import Config
-from app.core.i18n import get_language
+from app.core.i18n import get_language, map_locale
 from app.core.ports import IconState, PlatformPort, UIPort
 from app.core.state_machine import StateMachine
 from app.core.updater import check_update
@@ -25,6 +25,15 @@ from app.ui.timer import RepeatingTimer, run_on_main
 from app.res.const import Const
 
 
+def _detect_language() -> str:
+    try:
+        from Foundation import NSLocale
+        ident = NSLocale.preferredLanguages()[0]
+        return map_locale(str(ident))
+    except Exception:
+        return 'en'
+
+
 class AppDelegate(NSObject):
     """NSApplicationDelegate that owns the state machine and drives UI updates."""
 
@@ -32,7 +41,7 @@ class AppDelegate(NSObject):
         self = objc.super(AppDelegate, self).init()
         self.platform = platform
         self.config = Config()
-        self.config.load()
+        self.config.load(detect_language=_detect_language)
         self.lang = get_language(self.config.language)
         self.state = StateMachine(
             self.config, platform, UIAdapter(self), self.lang,
@@ -79,7 +88,7 @@ class AppDelegate(NSObject):
             self.platform.open_accessibility_settings()
 
     def _welcome(self) -> None:
-        self.dialogs.select_language(self._set_language)
+        self.dialogs.select_language(self._set_language, self.config.language)
         self.dialogs.about()
         self.dialogs.bind_bluetooth_device(
             self.platform,

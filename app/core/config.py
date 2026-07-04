@@ -4,6 +4,7 @@ import json
 import logging
 import os
 from dataclasses import asdict, dataclass, fields
+from typing import Callable, Optional
 
 from app.res.const import Const
 
@@ -16,7 +17,7 @@ class Config:
     """Persistent settings. Never contains the password (stored in Keychain)."""
 
     welcome: bool = True
-    language: str = 'en'
+    language: str = ''
     device_address: str = ''
     device_name: str = ''
     weak_signal_value: int = -80
@@ -28,7 +29,7 @@ class Config:
 
     _path = Const.config_path
 
-    def load(self) -> None:
+    def load(self, detect_language: Optional[Callable[[], str]] = None) -> None:
         # Migrate legacy flat-file config (~/Library/Application Support/<bundle_id>)
         # to the new directory layout with config.json inside that path.
         if os.path.isfile(Const.config_dir):
@@ -42,19 +43,26 @@ class Config:
             except (OSError, ValueError):
                 pass
 
-        if not os.path.exists(self._path):
-            return
-        try:
-            with open(self._path, 'r', encoding='utf-8') as io:
-                data = json.load(io)
-        except (OSError, ValueError):
-            log.warning('Failed to load config from %s; using defaults.', self._path)
-            return
-
-        known = {f.name for f in fields(self)}
-        for k, v in data.items():
-            if k in known:
-                setattr(self, k, v)
+        dirty = not os.path.exists(self._path)
+        if os.path.exists(self._path):
+            try:
+                with open(self._path, 'r', encoding='utf-8') as io:
+                    data = json.load(io)
+            except (OSError, ValueError):
+                data = {}
+                dirty = True
+                log.warning('Failed to load config from %s; using defaults.', self._path)
+            else:
+                known = {f.name for f in fields(self)}
+                for k, v in data.items():
+                    if k in known:
+                        setattr(self, k, v)
+        if not self.language and detect_language:
+            self.language = detect_language()
+            dirty = True
+        # Persist defaults / resolved language only when something changed.
+        if dirty:
+            self.save()
 
     def save(self) -> None:
         os.makedirs(os.path.dirname(self._path), exist_ok=True)

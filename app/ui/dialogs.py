@@ -57,7 +57,8 @@ def input_text(title: str, description: str, default: str = '',
     return None
 
 
-def select_from_list(title: str, description: str, items: list[str]) -> int | None:
+def select_from_list(title: str, description: str, items: list[str],
+                     default_index: int = 0) -> int | None:
     if not items:
         return None
     alert = NSAlert.alloc().init()
@@ -70,6 +71,8 @@ def select_from_list(title: str, description: str, items: list[str]) -> int | No
     popup = NSPopUpButton.alloc().initWithFrame_(NSMakeRect(0, 2, 300, 26))
     for item in items:
         popup.addItemWithTitle_(item)
+    if 0 <= default_index < len(items):
+        popup.selectItemAtIndex_(default_index)
     view.addSubview_(popup)
     alert.setAccessoryView_(view)
 
@@ -127,12 +130,13 @@ class Dialogs:
         device = devices[index]
         on_select(device.address, device.name)
 
-    def select_language(self, on_select: Callable[[str], None]) -> None:
+    def select_language(self, on_select: Callable[[str], None], current_code: str = 'en') -> None:
         from app.core.i18n import LANGUAGES, load_language
         load_language()  # ensure LANGUAGES is populated
         items = [lang.l_this for lang in LANGUAGES.values()]
+        default_index = list(LANGUAGES.keys()).index(current_code) if current_code in LANGUAGES else 0
         index = select_from_list(self.lang.menu_select_language,
-                                 self.lang.description_select_language, items)
+                                 self.lang.description_select_language, items, default_index)
         if index is None:
             return
         code = list(LANGUAGES.keys())[index]

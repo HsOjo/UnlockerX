@@ -10,6 +10,37 @@ from tests.fakes import FakePlatform
 from app.ui import dialogs
 
 
+class TestSelectLanguage:
+    def test_selects_current_code(self, monkeypatch):
+        from app.core.i18n import LANGUAGES, load_language
+        load_language()
+        selected = []
+
+        def fake_select(title, description, items, default_index=0):
+            assert items == [lang.l_this for lang in LANGUAGES.values()]
+            assert default_index == list(LANGUAGES.keys()).index('cn')
+            return default_index
+
+        monkeypatch.setattr(dialogs, 'select_from_list', fake_select)
+
+        d = dialogs.Dialogs(load_language('en'), None)  # type: ignore[arg-type]
+        d.select_language(selected.append, current_code='cn')
+        assert selected == ['cn']
+
+    def test_defaults_to_first_when_code_unknown(self, monkeypatch):
+        from app.core.i18n import LANGUAGES, load_language
+        load_language()
+
+        def fake_select(title, description, items, default_index=0):
+            assert default_index == 0
+            return 0
+
+        monkeypatch.setattr(dialogs, 'select_from_list', fake_select)
+
+        d = dialogs.Dialogs(load_language('en'), None)  # type: ignore[arg-type]
+        d.select_language(lambda code: None, current_code='xx')
+
+
 class TestBindBluetoothDevice:
     def test_shows_devices_even_when_power_state_reported_off(self, monkeypatch):
         """If paired_devices returns entries, the list should be shown even when

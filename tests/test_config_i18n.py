@@ -29,11 +29,46 @@ def test_config_no_password_field():
     assert not hasattr(Config(), 'password')
 
 
-def test_config_load_missing_file_is_noop():
-    c = Config()
-    c._path = '/nonexistent/path/to/config.json'
-    c.load()  # must not raise
-    assert c.device_address == ''
+def test_config_load_missing_file_creates_defaults():
+    with tempfile.TemporaryDirectory() as d:
+        path = os.path.join(d, 'config.json')
+        c = Config()
+        c._path = path
+        c.load()  # must not raise
+        assert c.device_address == ''
+        assert os.path.exists(path)
+
+
+def test_config_detects_language_on_first_run():
+    with tempfile.TemporaryDirectory() as d:
+        path = os.path.join(d, 'config.json')
+        c = Config()
+        c._path = path
+        c.load(detect_language=lambda: 'cn')
+        assert c.language == 'cn'
+        assert os.path.exists(path)
+
+        c2 = Config()
+        c2._path = path
+        c2.load(detect_language=lambda: 'jp')
+        # Once persisted, detection should not overwrite the user's choice.
+        assert c2.language == 'cn'
+
+
+def test_config_detect_language_not_called_when_language_present():
+    with tempfile.TemporaryDirectory() as d:
+        path = os.path.join(d, 'config.json')
+        c = Config()
+        c._path = path
+        c.language = 'ko'
+        c.save()
+
+        called = []
+        c2 = Config()
+        c2._path = path
+        c2.load(detect_language=lambda: called.append(True) or 'cn')
+        assert c2.language == 'ko'
+        assert not called
 
 
 def _public_names(obj) -> set[str]:
