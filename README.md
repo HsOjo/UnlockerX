@@ -1,53 +1,52 @@
 # UnlockerX
 
-Near unlock your Mac by Bluetooth device!
+Near unlock your Mac by Bluetooth device.
 
-> This program can work normally in macOS **10.14/10.15/11**.
+* Unlock your Mac automatically when a paired Bluetooth device is near.
+* Lock the screen when the device leaves, the signal becomes weak, the lid closes, the system is idle, or the display sleeps.
+* Native menu-bar UI built with PyObjC/AppKit (no rumps, no bundled binaries).
+* Native Bluetooth via `IOBluetooth` (no `blueutil` / `BluetoothConnector` binaries).
+* Password stored in the macOS Keychain instead of a local obfuscated config file.
+* Check for updates manually or on startup.
 
-* Multiple language support ! ! !
-  * English
-  * Simple Chinese
-  * Tradtional Chinese
-  * Japanese (By Translater)
-  * Korean (By Translater)
+Event-driven state machine, native PyObjC/AppKit implementation, no bundled binaries.
 
-* Events callback execute custom program support !!!
-  * Weak Signal
-  * Connect Status Changed
-  * Lock Status Changed
-  * Lid Status Changed
+> Requires **macOS 10.15+**. Source runs require **Python 3.12+**.
 
-Base on above contents, You can free to extend this program. (example code on folder "/docs/".)
+* Multi-language support: English, Simplified Chinese, Traditional Chinese, Japanese, Korean.
 
-![Thumbnail](docs/img/thumbnail_en.png)
+## Important Security Note
+
+This app must know your macOS login password in order to type it into the lock screen. The password is stored in your macOS Keychain. Because the app is **unsigned**, the Keychain item is created with an ACL that allows any local process running as you to read it silently. This is the trade-off for automatic unlock without elevated privileges or modifying the system authorization chain.
+
+If you are not comfortable with this, do not use the auto-unlock feature. Without Accessibility permission the app will still lock on leave, but it will not unlock automatically.
+
+## Permissions
+
+* **Accessibility** — required for simulating keystrokes to unlock. If denied, the app runs in "lock only" mode.
+* **Bluetooth** — required to read connection state and RSSI of the bound device.
 
 ## Downloads
 
-Please view [Releases Page](../../releases).
+See the [Releases Page](../../releases).
 
-## Some Problems
+## First Open (Unsigned App)
 
-* After macOS 10.15, Sometimes can not unlock normally. (Like password edit unfocused.)
-  * You can set unlock delay time (in "Preferences" - "Advanced Options") to solve this problem. (maybe)
+UnlockerX is distributed unsigned. On first launch, Gatekeeper will refuse to open it. Right-click the app and select **Open**, or clear the quarantine attribute:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/UnlockerX.app
+```
 
 ## How To Build
 
-* Install Requirement.
+Requires Python 3.12 and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-pip3 install -r requirements.txt
-```
-
-* Build
-
-```bash
-python3 build.py [--translate-baidu] [--py2app]
+uv sync --extra build
+uv run python build.py          # build dist/UnlockerX.app and dist/UnlockerX-<version>.zip
 ```
 
 ## Report Bug
 
-If you meet some bug in this app, You can try to export log (in "Preferences" - "Advanced Options"), and send to this project issues page.
-
-It will be export log file to directory, your private data will replace with hider text.
-
-And the next step, you can send this log file on this project' s GitHub page issues.
+Export logs (Preferences → Advanced Options) and attach them to a GitHub issue. Exported logs redact private data.

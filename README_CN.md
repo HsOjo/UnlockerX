@@ -1,54 +1,52 @@
 # UnlockerX
 
-使用蓝牙设备靠近以解锁你的Mac！
+通过蓝牙设备靠近自动解锁你的 Mac。
 
-> 这个程序可以在macOS **10.14/10.15/11**正常运行。
+* 绑定设备靠近时自动解锁 Mac。
+* 设备离开、信号弱、合盖、系统空闲、显示器睡眠时自动锁屏。
+* 使用 PyObjC/AppKit 原生菜单栏（无 rumps、无外部二进制）。
+* 使用原生 `IOBluetooth` 读取连接状态与 RSSI（无 blueutil / BluetoothConnector）。
+* 密码存储在 macOS 钥匙串中，不再本地伪加密。
+* 启动时或手动检查更新。
 
-* 多语言支持 ！！！
-  * 英文
-  * 简体中文
-  * 繁体中文
-  * 日文（翻译）
-  * 韩文（翻译）
+事件驱动状态机，PyObjC/AppKit 原生实现，无外部二进制。
 
-* 事件回调支持执行自定义程序！！！
-  * 信号弱
-  * 连接状态改变
-  * 锁定状态改变
-  * 合盖状态改变
+> 需要 **macOS 10.15+**。源码运行需 **Python 3.12+**。
 
-基于以上内容，你可以自由地扩展这个程序。（示例代码在 "/docs" 目录下）
+* 多语言支持：英文、简体中文、繁体中文、日文、韩文。
 
-![Thumbnail](docs/img/thumbnail_cn.png)
+## 安全说明
+
+本应用必须知道你的 macOS 登录密码，才能在锁屏界面键入以解锁。密码保存在 macOS 钥匙串中。由于应用**未签名**，钥匙串项的 ACL 设置为允许所有本机进程静默读取，这是「无提权、不改系统授权链」实现自动解锁的既定取舍。
+
+如无法接受，请勿使用自动解锁功能。未授予「辅助功能」权限时，应用仍会在离开时锁屏，但不会自动解锁。
+
+## 权限
+
+* **辅助功能** — 模拟键入解锁必需。未授予时仅锁屏、不解锁。
+* **蓝牙** — 读取绑定设备的连接状态与 RSSI 必需。
 
 ## 下载
 
-请查看[Releases页面](../../releases)。
+见 [Releases Page](../../releases)。
 
-## 一些问题
+## 首次打开（未签名应用）
 
-* 在macOS 10.15之后，有时无法正常解锁。（如密码编辑框无法获得焦点。）
-  * 您可以通过设置解锁延迟时间（在“偏好设置”-“高级选项”）来解决此问题。（可能）
+UnlockerX 以未签名方式分发。首次启动时 Gatekeeper 会拒绝打开。可以**右键点击应用 → 打开**，或清除隔离属性：
+
+```bash
+xattr -dr com.apple.quarantine /Applications/UnlockerX.app
+```
 
 ## 如何构建
 
-* 安装依赖包
+需要 Python 3.12 与 [uv](https://docs.astral.sh/uv/)。
 
 ```bash
-pip3 install -r requirements.txt
+uv sync --extra build
+uv run python build.py          # 产出 dist/UnlockerX.app 与 dist/UnlockerX-<version>.zip
 ```
 
-* 构建
+## 提交 Bug
 
-```bash
-python3 build.py [--translate-baidu] [--py2app]
-```
-
-
-## 提交Bug
-
-如果你在这个应用遇到问题，您可以尝试导出日志（在“偏好设置”-“高级选项”），并发送到这个项目的 issues 页面。
-
-这将会导出日志文件到目录，你的隐私数据将会被屏蔽文字所替换。
-
-下一步，你可以将这个日志文件发送到这个项目的GitHub页面的issues。
+导出日志（偏好设置 → 高级选项），并附到 GitHub issue。导出的日志会屏蔽隐私数据。

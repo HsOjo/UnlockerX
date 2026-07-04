@@ -1,102 +1,117 @@
+"""Build script: PyInstaller onedir -> unsigned .app -> distribution zip.
+
+Produces `dist/UnlockerX.app` (LSUIElement menubar app) and
+`dist/UnlockerX-<version>.zip`. No code signing / notarization.
+
+Usage:
+    python build.py            # build .app + zip
+    python build.py --no-zip   # build .app only
+"""
+import os
+import plistlib
 import shutil
+import subprocess
 import sys
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_DEFLATED
 
-from app import Log
 from app.res.const import Const
-from app.res.language import load_language, LANGUAGES
-from app.res.language.translate_language import TranslateLanguage
-from tools.translate import *
-from tools.utils.zip import zip_directory
-
-datas = {}
 
 
-def add_data(src, dest):
-    if os.path.exists(src):
-        datas[src] = dest
+ROOT = os.path.dirname(os.path.abspath(__file__))
+DIST = os.path.join(ROOT, 'dist')
+APP_PATH = os.path.join(DIST, f'{Const.app_name}.app')
+ICON = os.path.join(ROOT, 'app', 'res', 'icon.icns')
 
 
-# build translate language data.
-Log.append('Build', 'Info', 'Building translate data now...')
-load_language()
-for lang_type in LANGUAGES.values():
-    if issubclass(lang_type, TranslateLanguage):
-        lang = lang_type()
-        if not lang._translated:
-            if lang._translate_to == 'cn_t':
-                translator = zhconv()
-            elif '--translate-baidu' in sys.argv:
-                translator = baidu_translate()
-            else:
-                translator = google_translate()
-            Log.append('Build', 'Translate', 'Using %s' % translator.__class__.__name__)
+def _clean():
+    for d in ('build', 'dist'):
+        shutil.rmtree(os.path.join(ROOT, d), ignore_errors=True)
+    spec = os.path.join(ROOT, f'{Const.app_name}.spec')
+    if os.path.exists(spec):
+        os.unlink(spec)
 
-            lang.translate(translator)
-            lang.save_current_translate()
-        add_data(lang._data_path, './app/res/language/translate')
 
-# reset dist directory.
-shutil.rmtree('./build', ignore_errors=True)
-shutil.rmtree('./dist', ignore_errors=True)
+def _pyinstaller():
+    data_sep = ';' if os.name == 'nt' else ':'
+    res_dir = os.path.join('app', 'res')
+    data_files = [
+        os.path.join(res_dir, 'icon.png'),
+        os.path.join(res_dir, 'icon_weak_signal.png'),
+        os.path.join(res_dir, 'icon_disconnect.png'),
+    ]
+    add_data = []
+    for f in data_files:
+        add_data.extend(['--add-data', f'{f}{data_sep}{res_dir}'])
 
-add_data('./app/res/icon.png', './app/res')
-add_data('./app/res/icon_weak_signal.png', './app/res')
-add_data('./app/res/icon_disconnect.png', './app/res')
-add_data('./app/res/icon.png', './app/res')
-add_data('./app/lib/blueutil/blueutil', './app/lib/blueutil')
-add_data('./app/lib/bluetoothconnector/BluetoothConnector', './app/lib/bluetoothconnector')
+    cmd = [
+        sys.executable, '-m', 'PyInstaller',
+        '--noconfirm', '--clean',
+        '--windowed',
+        '--onedir',
+        '--target-arch', 'universal2',
+        '--name', Const.app_name,
+        '--icon', ICON,
+        '--osx-bundle-identifier', Const.bundle_id,
+        *add_data,
+        '__main__.py',
+    ]
+    print(' '.join(cmd))
+    subprocess.run(cmd, check=True, cwd=ROOT)
 
-path_app_dir = './dist/%s.app' % Const.app_name
-path_app_zip = './dist/%s-%s.zip' % (Const.app_name, Const.version)
 
-use_py2app = '--py2app' in sys.argv
-if use_py2app:
-    Log.append('Build', 'Info', 'Py2App packing now...')
-    os.system('python setup.py py2app')
-    shutil.rmtree('./build', ignore_errors=True)
+def _patch_info_plist():
+    plist_path = os.path.join(APP_PATH, 'Contents', 'Info.plist')
+    with open(plist_path, 'rb') as f:
+        info = plistlib.load(f)
 
-    res_dir = '%s/Contents/Resources' % path_app_dir
-    for f, fd in datas.items():
-        dd = ('%s/%s' % (res_dir, fd)).replace('/./', '/')
-        os.makedirs(dd, exist_ok=True)
-        shutil.copy(f, dd)
+    info['LSUIElement'] = True
+    info['LSMinimumSystemVersion'] = '10.15'
+    info['CFBundleName'] = Const.app_name
+    info['CFBundleDisplayName'] = Const.app_name
+    info['CFBundleShortVersionString'] = Const.version
+    info['CFBundleVersion'] = Const.version
+    info['NSHumanReadableCopyright'] = f'Copyright (c) {Const.author}. All rights reserved.'
+    info.setdefault(
+        'NSBluetoothAlwaysUsageDescription',
+        f'{Const.app_name} needs Bluetooth access to detect your bound device for auto-unlock.')
 
-    # clean not .pyc files.
-    Log.append('Build', 'Info', 'Cleaning...')
-    lib_dir = '%s/lib' % res_dir
-    [lib_file] = [f for f in os.listdir(lib_dir) if 'python' in f and '.zip' in f]
-    lib_path = '%s/%s' % (lib_dir, lib_file)
-    with ZipFile(lib_path, 'r') as zf:
-        zf.extractall(lib_file)
+    with open(plist_path, 'wb') as f:
+        plistlib.dump(info, f)
+    print(f'Patched Info.plist: LSUIElement, LSMinimumSystemVersion=10.15, version={Const.version}')
 
-    zip_directory(lib_file, lib_path, filter_='(.*\.pyc$)|(.*\.pem$)', remove='.*__pycache__.*')
-    shutil.rmtree(lib_file)
-else:
-    data_str = ''
-    for k, v in datas.items():
-        data_str += ' \\\n\t'
-        data_str += '--add-data "%s:%s"' % (k, v)
 
-    Log.append('Build', 'Info', 'Pyinstaller packing now...')
-    pyi_cmd = 'pyinstaller -F -w -n "%s" -i "./app/res/icon.icns" %s \\\n__main__.py' % (Const.app_name, data_str)
-    print(pyi_cmd)
-    os.system(pyi_cmd)
-    os.unlink('./%s.spec' % Const.app_name)
-    shutil.rmtree('./build', ignore_errors=True)
+def _zip():
+    zip_path = os.path.join(DIST, f'{Const.app_name}-{Const.version}.zip')
+    base = os.path.dirname(APP_PATH)
+    with ZipFile(zip_path, 'w', ZIP_DEFLATED) as zf:
+        for dirpath, _, files in os.walk(APP_PATH):
+            for name in files:
+                full = os.path.join(dirpath, name)
+                arcname = os.path.relpath(full, base)
+                if '__pycache__' in arcname:
+                    continue
+                zf.write(full, arcname)
+    print(f'Wrote {zip_path}')
 
-    # hide dock icon.
-    INFO_FILE = './dist/%s.app/Contents/Info.plist' % Const.app_name
 
-    with open(INFO_FILE, 'r') as io:
-        info = io.read()
+def _sanity_check():
+    exe = os.path.join(APP_PATH, 'Contents', 'MacOS', Const.app_name)
+    if not os.path.exists(exe):
+        raise RuntimeError(f'PyInstaller did not produce expected executable: {exe}')
 
-    dict_pos = info.find('<dict>') + 7
-    info = info[:dict_pos] + '\t<key>LSUIElement</key>\n\t<string>1</string>\n' + info[dict_pos:]
-    with open(INFO_FILE, 'w') as io:
-        io.write(info)
 
-# pack release zip file.
-Log.append('Build', 'Info', 'Packing release zip file now...')
-zip_directory(path_app_dir, path_app_zip, remove='.*__pycache__.*', dirname=True)
-Log.append('Build', 'Info', 'Build finish.')
+def main():
+    if sys.platform != 'darwin':
+        print('Warning: building on non-macOS; the .app will not be usable.', file=sys.stderr)
+    _clean()
+    _pyinstaller()
+    _sanity_check()
+    _patch_info_plist()
+    if '--no-zip' not in sys.argv:
+        _zip()
+    print(f'Done. Unsigned app at {APP_PATH}')
+    print(f'First open: right-click -> Open, or `xattr -dr com.apple.quarantine "{APP_PATH}"`.')
+
+
+if __name__ == '__main__':
+    main()
