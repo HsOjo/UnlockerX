@@ -282,8 +282,7 @@ class AppDelegate(NSObject):
             from app.platform import system
             show_alert(title,
                        f'{subtitle}\n{self.lang.noti_update_star}\n\n{Const.releases_url}')
-            if release.download_url:
-                system.open_url(release.download_url)
+            system.open_url(release.html_url)
 
     # ---- timers ----
     def _poll(self) -> None:

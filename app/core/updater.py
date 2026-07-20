@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Optional
 
 import requests
+from bs4 import BeautifulSoup
 
 from app.res.const import Const
 
@@ -15,7 +17,6 @@ class Release:
     published_at: str
     html_url: str
     body: str
-    download_url: Optional[str]
 
 
 def _norm_version(version: str) -> list[int]:
@@ -49,23 +50,44 @@ def compare_version(current: str, latest: str) -> bool:
 
 
 def get_latest_release(timeout: float = 5) -> Release:
-    url = f'https://api.github.com/repos/{Const.author}/{Const.app_name}/releases/latest'
-    resp = requests.get(url, timeout=timeout)
-    resp.raise_for_status()
-    data = resp.json()
+    """Parse the latest release from the GitHub releases HTML page.
 
-    download_url = None
-    assets = data.get('assets') or []
-    if assets:
-        download_url = assets[0].get('browser_download_url')
+    GitHub's REST API has a very low unauthenticated rate limit (60 req/hour),
+    so we scrape the public releases page instead.
+    """
+    resp = requests.get(Const.releases_url, timeout=timeout)
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.text, 'html.parser')
+
+    tag_link = soup.find(
+        'a',
+        href=re.compile(rf'^/{Const.author}/{Const.app_name}/releases/tag/'),
+    )
+    if not tag_link:
+        raise ValueError('Could not find release tag on GitHub releases page')
+
+    href = tag_link.get('href', '')
+    tag_name = href.split('/')[-1]
+    html_url = f'https://github.com{href}'
+    name = tag_link.text.strip()
+
+    published_at = ''
+    body = ''
+    section = tag_link.find_parent('section')
+    if section:
+        time_tag = section.find('relative-time')
+        if time_tag:
+            published_at = (time_tag.get('datetime') or '').replace('T', ' ').replace('Z', '')
+        body_tag = section.find('div', class_='markdown-body')
+        if body_tag:
+            body = body_tag.get_text('\n').strip()
 
     return Release(
-        name=data.get('name', ''),
-        tag_name=data.get('tag_name', ''),
-        published_at=data.get('published_at', '').replace('T', ' ').replace('Z', ''),
-        html_url=data.get('html_url', Const.releases_url),
-        body=data.get('body', ''),
-        download_url=download_url,
+        name=name,
+        tag_name=tag_name,
+        published_at=published_at,
+        html_url=html_url,
+        body=body,
     )
 
 
