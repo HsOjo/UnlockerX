@@ -73,9 +73,6 @@ target/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# uv
-uv.lock
-
 # celery beat schedule file
 celerybeat-schedule
 
