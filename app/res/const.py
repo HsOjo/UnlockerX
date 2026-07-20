@@ -4,7 +4,7 @@ import os
 class Const:
     author = 'HsOjo'
     app_name = 'UnlockerX'
-    version = '2.0.0'
+    version = '2.1.0'
 
     bundle_id = f'com.{author}.{app_name}'.lower()
     github_page = f'https://github.com/{author}/{app_name}'
